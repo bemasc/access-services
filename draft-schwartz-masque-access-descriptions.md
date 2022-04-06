@@ -52,7 +52,7 @@ An access service collection is defined by a JSON dictionary containing keys spe
 
 The "dns", "udp", and "ip" keys are each defined to hold a JSON dictionary containing the key "template" with a value that is a URI template suitable for configuring DNS over HTTPS, CONNECT-UDP, or CONNECT-IP, respectively.
 
-The "ohai" key contains a dictionary with either or both of these keys:
+The "ohttp" key contains a dictionary with either or both of these keys:
 
 * "proxy", containing a dictionary with a "uri" key indicating the Oblivious Proxy Resource.
 * "request", containing a dictionary with a "uri" key indicating the Oblivious Request Resource and a "key" key conveying its KeyConfig in base64.
@@ -71,23 +71,23 @@ The "ohai" key contains a dictionary with either or both of these keys:
   "ip": {
     "template": "https://proxy.example.org/masque{?target,ip_proto}"
   },
-  "ohai": {
+  "ohttp": {
     "proxy": {
-      "uri": "https://proxy.example.org/ohai/"
+      "uri": "https://proxy.example.org/ohttp/"
     }
   }
 }
 ~~~
-{: title="A general-purpose proxy with UDP, IP, DNS, and OHAI support"}
+{: title="A proxy with UDP, IP, DNS, and Oblivious HTTP support"}
 
 ~~~JSON
 {
   "dns": {
     "template": "https://doh.example.com/dns-query{?dns}",
   },
-  "ohai": {
+  "ohttp": {
     "request": {
-      "uri": "https://example.com/ohai/",
+      "uri": "https://example.com/ohttp/",
       "key": "(KeyConfig in Base64)"
     }
   }
@@ -111,12 +111,12 @@ TODO Security
 
 IANA is requested to open a Specification Required registry entitled "HTTP Access Service Descriptors", with the following initial contents:
 
-| Key  | Specification   |
-|------|-----------------|
-| dns  | (This document) |
-| udp  | (This document) |
-| ip   | (This document) |
-| ohai | (This document) |
+| Key   | Specification   |
+|-------|-----------------|
+| dns   | (This document) |
+| udp   | (This document) |
+| ip    | (This document) |
+| ohttp | (This document) |
 
 IANA is requested to add the following entry to the "Well-Known URIs" registry
 
