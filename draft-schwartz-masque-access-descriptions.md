@@ -57,7 +57,7 @@ The "ohai" key contains a dictionary with either or both of these keys:
 * "proxy", containing a dictionary with a "uri" key indicating the Oblivious Proxy Resource.
 * "request", containing a dictionary with a "uri" key indicating the Oblivious Request Resource and a "key" key conveying its KeyConfig in base64.
 
-For example, a description making use of all four initial keys might look like:
+## Examples
 
 ~~~JSON
 {
@@ -65,15 +65,27 @@ For example, a description making use of all four initial keys might look like:
     "template": "https://doh.example.com/dns-query{?dns}",
   },
   "udp": {
-    "template": "https://proxy.example.org:4443/masque{?target_host,target_port}"
+    "template":
+        "https://proxy.example.org/masque{?target_host,target_port}"
   },
   "ip": {
-    "template": "https://proxy.example.org:4443/masque{?target,ip_proto}"
+    "template": "https://proxy.example.org/masque{?target,ip_proto}"
   },
   "ohai": {
     "proxy": {
       "uri": "https://proxy.example.org/ohai/"
-    },
+    }
+  }
+}
+~~~
+{: title="A general-purpose proxy with UDP, IP, DNS, and OHAI support"}
+
+~~~JSON
+{
+  "dns": {
+    "template": "https://doh.example.com/dns-query{?dns}",
+  },
+  "ohai": {
     "request": {
       "uri": "https://example.com/ohai/",
       "key": "(KeyConfig in Base64)"
@@ -81,6 +93,7 @@ For example, a description making use of all four initial keys might look like:
   }
 }
 ~~~
+{: title="An Oblivious DNS over HTTPS service"}
 
 # Discovery from an Origin
 
