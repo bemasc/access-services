@@ -5,11 +5,11 @@ category: info
 
 docname: draft-schwartz-masque-access-descriptions-latest
 v: 3
-area: tsv
-workgroup: masque
+area: "Transport"
+workgroup: "Multiplexed Application Substrate over QUIC Encryption"
 keyword: Internet-Draft
 venue:
-  github: bemasc/access-services
+  github: "bemasc/access-services"
 
 author:
  -
