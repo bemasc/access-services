@@ -1,7 +1,7 @@
 ---
 title: "HTTP Access Service Description Objects"
 abbrev: "HTTP Access Service Descriptions"
-category: info
+category: std
 
 docname: draft-schwartz-masque-access-descriptions-latest
 v: 3
@@ -42,17 +42,21 @@ Recently, a variety of new standardized proxy-like services have emerged for HTT
 
 This specification provides a unified format for describing a collection of such access services, and a mechanism for reaching such services when the initial information contains only an HTTP origin.
 
+# Conventions and Definitions
+
+{::boilerplate bcp14-tagged}
+
 # Format
 
 An access service collection is defined by a JSON dictionary containing keys specified in the corresponding registry ({{iana}}).  Inclusion of each key is OPTIONAL.
 
-The "doh", "udp", and "ip" keys are each defined to hold a JSON dictionary containing the key "template" with a value that is a URI template suitable for configuring DNS over HTTPS, CONNECT-UDP, or CONNECT-IP, respectively.  The "ohai" key contains a dictionary whose "request" key contains the URI of an Oblivious HTTP "request resource".
+The "dns", "udp", and "ip" keys are each defined to hold a JSON dictionary containing the key "template" with a value that is a URI template suitable for configuring DNS over HTTPS, CONNECT-UDP, or CONNECT-IP, respectively.  The "ohai" key contains a dictionary whose "request" key contains the URI of an Oblivious HTTP "request resource".
 
 For example, a description making use of all four initial keys might look like:
 
 ~~~JSON
 {
-  "doh": {
+  "dns": {
     "template": "https://doh.example.com/dns-query{?dns}",
   },
   "udp": {
@@ -73,10 +77,6 @@ In cases where the HTTP access service is identified only by an origin (e.g. whe
 
 Clients MAY fetch this access description and use the indicated services (in addition to any origin-scoped services) automatically.  Clients MUST refresh the description periodically in accordance with its indicated HTTP cache lifetime.
 
-# Conventions and Definitions
-
-{::boilerplate bcp14-tagged}
-
 
 # Security Considerations
 
@@ -89,11 +89,16 @@ IANA is requested to open a Specification Required registry entitled "HTTP Acces
 
 | Key  | Specification   |
 |------|-----------------|
-| doh  | (This document) |
+| dns  | (This document) |
 | udp  | (This document) |
 | ip   | (This document) |
 | ohai | (This document) |
 
+IANA is requested to add the following entry to the "Well-Known URIs" registry
+
+| URI Suffix      | Change Controller | Reference       | Status    | Related Information |
+| --------------- | ----------------- | --------------- | --------- | ------------------- |
+| access-services | IETF              | (This document) | permanent | Sub-registry at (link)      |
 
 --- back
 
