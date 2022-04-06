@@ -33,7 +33,7 @@ HTTP proxies can operate several different kinds of access services.  This speci
 
 In HTTP/1.1, forward proxy service was originally defined in two ways: absolute-uri form (encrypted at most hop-by-hop), and HTTP CONNECT (potentially encrypted end-to-end).  Both of these services were effectively origin-scoped: the access service was a property of the origin, not associated with any particular path.
 
-Recently, a variety of new standardized proxy-like services have emerged for HTTP.  These new services are defined by URI templates that produce one or more distinct paths for each service, allowing distinct instances of the same service type to be served by a single origin.  These services include:
+Recently, a variety of new standardized proxy-like services have emerged for HTTP.  These new services are defined by a URI template or path, allowing distinct instances of the same service type to be served by a single origin.  These services include:
 
 * DNS over HTTPS
 * CONNECT-UDP
@@ -50,7 +50,12 @@ This specification provides a unified format for describing a collection of such
 
 An access service collection is defined by a JSON dictionary containing keys specified in the corresponding registry ({{iana}}).  Inclusion of each key is OPTIONAL.
 
-The "dns", "udp", and "ip" keys are each defined to hold a JSON dictionary containing the key "template" with a value that is a URI template suitable for configuring DNS over HTTPS, CONNECT-UDP, or CONNECT-IP, respectively.  The "ohai" key contains a dictionary whose "request" key contains the URI of an Oblivious HTTP "request resource".
+The "dns", "udp", and "ip" keys are each defined to hold a JSON dictionary containing the key "template" with a value that is a URI template suitable for configuring DNS over HTTPS, CONNECT-UDP, or CONNECT-IP, respectively.
+
+The "ohai" key contains a dictionary with either or both of these keys:
+
+* "proxy", containing a dictionary with a "uri" key indicating the Oblivious Proxy Resource.
+* "request", containing a dictionary with a "uri" key indicating the Oblivious Request Resource and a "key" key conveying its KeyConfig in base64.
 
 For example, a description making use of all four initial keys might look like:
 
@@ -66,7 +71,13 @@ For example, a description making use of all four initial keys might look like:
     "template": "https://proxy.example.org:4443/masque{?target,ip_proto}"
   },
   "ohai": {
-    "request": "https://example.com/ohai/"
+    "proxy": {
+      "uri": "https://proxy.example.org/ohai/"
+    },
+    "request": {
+      "uri": "https://example.com/ohai/",
+      "key": "(KeyConfig in Base64)"
+    }
   }
 }
 ~~~
