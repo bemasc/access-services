@@ -24,7 +24,7 @@ informative:
 
 --- abstract
 
-The assurances provided by Oblivious HTTP depend on the client's ability to verify that it is using the same Request Resource and public keys as many other users.  This specification defines a protocol to enable this verification.
+The assurances provided by Oblivious HTTP depend on the client's ability to verify that it is using the same Request Resource and KeyConfig as many other users.  This specification defines a protocol to enable this verification.
 
 --- middle
 
@@ -68,7 +68,7 @@ The proxy caches the response, ensuring that all clients share it during its fre
 
 ## Oblivious Request Resource
 
-The Oblivious Request Resource MUST publish an Access Description ((!I-D.schwartz-masque-access-desriptions)) available over HTTP/3, containing the `ohttp.request` key, e.g.:
+The Oblivious Request Resource MUST publish an Access Description {{!I-D.schwartz-masque-access-descriptions}} over HTTP/3 containing the `ohttp.request` key, e.g.:
 
 ~~~JSON
 {
@@ -81,13 +81,13 @@ The Oblivious Request Resource MUST publish an Access Description ((!I-D.schwart
 }
 ~~~
 
-The Oblivious Request Resource MUST include a "strong validator" ETag ({{Section 2 of !RFC7232}}) in any response to a GET request for this access description, and MUST support the "If-Match" HTTP request header ({{Section 3 of !RFC7232}}).  The response MUST indicate "Cache-Control: public, no-transform, s-maxage=(...), immutable" {{!I-D.ietf-httpbis-cache}}{{!RFC8246}}.  For efficiency reasons, the max age SHOULD be at least 60 seconds.
+The Oblivious Request Resource MUST include a "strong validator" ETag ({{Section 2 of !RFC7232}}) in any response to a GET request for this access description, and MUST support the "If-Match" HTTP request header ({{Section 3 of !RFC7232}}).  The response MUST indicate "Cache-Control: public, no-transform, s-maxage=(...), immutable" {{!I-D.ietf-httpbis-cache}}{{!RFC8246}}.  For efficiency reasons, the max age SHOULD be at least 60 seconds, and preferably much longer.
 
 If this Access Description changes, and the resource receives a request whose "If-Match" header identifies a previously served version that has not yet expired, it MUST return a success response containing the previous version.  This response MAY indicate "Cache-Control: private".
 
 ## Oblivious Proxy {#proxy}
 
-The Oblivious Proxy MUST publish an Access Description that includes the `ohttp.proxy` and `udp` keys, indicating support for CONNECT-UDP {{!I-D.ietf-masque-connect-udp}}.  It SHOULD also contain the `dns` key, indicating support for DNS over HTTPS {{!RFC8484}}, to enable the use of HTTPS records.
+The Oblivious Proxy MUST publish an Access Description that includes the `ohttp.proxy` and `udp` keys, indicating support for CONNECT-UDP {{!I-D.ietf-masque-connect-udp}}.  It SHOULD also contain the `dns` key, indicating support for DNS over HTTPS {{!RFC8484}}, to enable the use of HTTPS records with CONNECT-UDP.
 
 ~~~JSON
 {
@@ -107,7 +107,7 @@ The Oblivious Proxy MUST publish an Access Description that includes the `ohttp.
 ~~~
 {: title="Example Proxy Access Description"}
 
-The Oblivious Proxy Resources MUST allow use of the GET method to retrieve small JSON responses, and SHOULD make ample cache space available in order to cache Access Descriptions.  Each proxy instance (as defined by its external-facing network interface) SHOULD share cache state among all clients to ensure that they use the same Access Descriptions for each Oblivious Request Resource.
+The Oblivious Proxy Resources MUST allow use of the GET method to retrieve small JSON responses, and SHOULD make ample cache space available in order to cache Access Descriptions.  Each proxy instance (as defined by its external-facing network interface) MUST share cache state among all clients to ensure that they use the same Access Descriptions for each Oblivious Request Resource.
 
 Oblivious Proxies MUST preserve the ETag response header on cached responses, and MUST add an Age header ({{!I-D.ietf-httpbis-cache-19, Section 5.1}}) to all proxied responses.  Oblivious Proxies MUST respect the "Cache-Control: immutable" directive, never revalidating these cached entries, and MUST NOT accept PUSH_PROMISE frames from the target.
 
@@ -123,19 +123,17 @@ Oblivious Proxies that are not intended for general-purpose proxy usage MAY impo
 The Client is assumed to know an "https" URI of an Oblivious Request Resource's Access Description.  To use that Request Resource, it MUST perform the following "double-check" procedure:
 
 1. Send a GET request to the Oblivious Proxy's template with `request_uri` set to the Access Description URI.
-2. Record the response (A).
-3. Fetch the Access Description URI from its origin via CONNECT-UDP, with "If-Match" set to response A's ETag.
-4. Record the response (B).
-5. Check that responses A and B were successful and the contents are identical, otherwise fail.
-6. Check that response A's "Cache-Control" values indicates "public" and "immutable".
+1. Record the response (A).
+1. Check that response A's "Cache-Control" values indicates "public" and "immutable".
+1. Fetch the Access Description URI from its origin via CONNECT-UDP, with "If-Match" set to response A's ETag.
+1. Record the response (B).
+1. Check that responses A and B were successful and the contents are identical, otherwise fail.
 
-This procedure ensures that the Access Description is authentic and will be shared by all users of this proxy.  Once response A or B expires, the client MUST refresh it before continuing to use this Access Description, and repeat the "double-check" process if a response changes.
+This procedure ensures that the Access Description is authentic and will be shared by all users of this proxy.  Once response A or B expires, the client MUST refresh it before continuing to use this Access Description, and MUST repeat the "double-check" process if either response changes.
 
 # Example: Oblivious DoH
 
-The client has been configured with an Oblivious DoH server and an Oblivious Proxy.
-
-The Oblivious DoH server is identified by an Access Description at "https://doh.example.com/config.json" with the following contents:
+In this example, the client has been configured with an Oblivious DoH server and an Oblivious Proxy.  The Oblivious DoH server is identified by an Access Description at "https://doh.example.com/config.json" with the following contents:
 
 ~~~JSON
 {
@@ -232,7 +230,7 @@ The client can now use the KeyConfig in this Access Description to reach the Obl
 
 ## In scope
 
-A malicious proxy could attempt to learn the contents of the oblivious request by forging an inauthentic KeyConfig for the Request Resource.  This is prevented by the client's requirement that the KeyConfig be served to it by the origin over HTTPS ({{client}}).
+A malicious proxy could attempt to learn the contents of the oblivious request by forging an Access Description containing its own KeyConfig.  This is prevented by the client's requirement that the KeyConfig be served to it by the configured origin over HTTPS ({{client}}).
 
 A malicious target could attempt to link multiple requests together by issuing each user a unique, persistent KeyConfig.  This attack is prevented by the client's requirement that the KeyConfig be fresh according to the proxy's cache ({{client}}).
 
@@ -240,7 +238,7 @@ A malicious target could attempt to rotate its entry in the proxy's cache in sev
 
 * Using HTTP PUSH_PROMISE frames.  This attack is prevented by disabling PUSH_PROMISE at the proxy ({{proxy}}).
 * By also acting as a client and sending requests designed to replace the Access Description in the cache before it expires:
-  - By sending requests with a "Cache-Control: no-cache" or similar directive.  It is prevented by the response's "Cache-Control: public, immutable" directives, which are verified by the client ({{client}}).
+  - By sending requests with a "Cache-Control: no-cache" or similar directive.  This is prevented by the response's "Cache-Control: public, immutable" directives, which are verified by the client ({{client}}).
   - By filling the cache with new entries, causing its previous Access Description to be evicted.  {{proxy}} describes some possible mitigations.
 
 A malicious client could use the proxy to send abusive traffic to any destination on the internet.  Abuse concerns can be mitigated by imposing a rate limit at the proxy ({{proxy}}).
