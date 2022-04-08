@@ -118,6 +118,8 @@ Proxies SHOULD employ defenses against malicious attempts to fill the cache.  So
 
 Oblivious Proxies that are not intended for general-purpose proxy usage MAY impose strict transfer limits or rate limits on HTTP CONNECT and CONNECT-UDP usage.
 
+If the proxy offers a DNS over HTTPS resolver, it MUST NOT enable EDNS Client Subnet support {{!RFC7871}}.
+
 ## Client
 
 The Client is assumed to know an "https" URI of an Oblivious Request Resource's Access Description.  To use that Request Resource, it MUST perform the following "double-check" procedure:
@@ -130,6 +132,8 @@ The Client is assumed to know an "https" URI of an Oblivious Request Resource's 
 1. Check that responses A and B were successful and the contents are identical, otherwise fail.
 
 This procedure ensures that the Access Description is authentic and will be shared by all users of this proxy.  Once response A or B expires, the client MUST refresh it before continuing to use this Access Description, and MUST repeat the "double-check" process if either response changes.
+
+Clients MUST perform each fetch to the origin (step 4) as a fully isolated request.  Any state related to this origin (e.g. cached DNS records, CONNECT-UDP tunnels, QUIC transport state, TLS session tickets, HTTP cookies) MUST NOT be shared with prior or subsequent requests.
 
 # Example: Oblivious DoH
 
@@ -226,13 +230,40 @@ Having successfully fetched the Access Description from both locations, the clie
 
 The client can now use the KeyConfig in this Access Description to reach the Oblivious DoH server, by forming Binary HTTP requests for "https://doh.example.com/dns-query" and delivering the encapsulated requests to "https://example.com/ohttp/" via the proxy.
 
+# Performance Implications
+
+## Latency
+
+Suppose that the client-proxy Round-Trip Time (RTT) is `A`, and the proxy-target RTT is `B`.  Suppose additionally that the client has a persistent connection to the proxy that is already running.  Then the procedure described in {{client}} requires:
+
+* `A` for the GET request to the proxy
+  - `+B` if the requested Access Description is not in cache
+  - `+B` if the proxy does not have a TLS session ticket for the target
+* `A` for the CONNECT-UDP request to the proxy
+* `A + B` for the QUIC handshake to the target
+* `A + B` for the GET request to the target
+
+This is a total of `4A + 4B` in the worst case.  However, clients can reduce the latency by issuing the requests to the proxy in parallel, and by using CONNECT-UDP's "false start" support.  The target can also optimize performance, by issuing long-lived TLS session tickets.  With these optimizations, the expected total time is `2A + 2B`.
+
+This procedure only needs to be repeated if the Access Description has expired.  Access Descriptions do not need to change frequently, so a cache lifetime of 1 day may be suitable.  Clients MAY perform this procedure in advance of an expiration to avoid a delay.
+
+## Thundering Herds
+
+All clients of the same proxy and target will have locally cached Access Descriptions with the same expiration time.  When this entry expires, all active clients will send refresh requests to the proxy at their next request.  Proxies SHOULD use "request coalescing" to avoid duplicate cache refresh requests to the target.
+
+If the Access Description has changed, these clients will initiate requests through the proxy to the target to double-check the new contents.  Proxies and targets MAY use an HTTP 503 response with a "Retry-After" header to manage load spikes.
+
 # Security Considerations
 
 ## In scope
 
+### Forgery
+
 A malicious proxy could attempt to learn the contents of the oblivious request by forging an Access Description containing its own KeyConfig.  This is prevented by the client's requirement that the KeyConfig be served to it by the configured origin over HTTPS ({{client}}).
 
-A malicious target could attempt to link multiple requests together by issuing each user a unique, persistent KeyConfig.  This attack is prevented by the client's requirement that the KeyConfig be fresh according to the proxy's cache ({{client}}).
+### Deanonymization
+
+A malicious target could attempt to link multiple Oblivious HTTP requests together by issuing each user a unique, persistent KeyConfig.  This attack is prevented by the client's requirement that the KeyConfig be fresh according to the proxy's cache ({{client}}).
 
 A malicious target could attempt to rotate its entry in the proxy's cache in several ways:
 
@@ -240,6 +271,10 @@ A malicious target could attempt to rotate its entry in the proxy's cache in sev
 * By also acting as a client and sending requests designed to replace the Access Description in the cache before it expires:
   - By sending requests with a "Cache-Control: no-cache" or similar directive.  This is prevented by the response's "Cache-Control: public, immutable" directives, which are verified by the client ({{client}}).
   - By filling the cache with new entries, causing its previous Access Description to be evicted.  {{proxy}} describes some possible mitigations.
+
+A malicious target could attempt to link different requests for the Access Description, in order to link the Oblivious HTTP requests that follow shortly after.  This is prevented by fully isolating each request ({{client}}), and by disabling EDNS Client Subnet ({{proxy}}).
+
+### Abusive traffic
 
 A malicious client could use the proxy to send abusive traffic to any destination on the internet.  Abuse concerns can be mitigated by imposing a rate limit at the proxy ({{proxy}}).
 
