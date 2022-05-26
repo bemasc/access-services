@@ -68,7 +68,7 @@ The proxy caches the response, ensuring that all clients share it during its fre
 
 ## Oblivious Request Resource
 
-The Oblivious Request Resource MUST publish an Access Description {{!I-D.schwartz-masque-access-descriptions}} over HTTP/3 containing the `ohttp.request` key, e.g.:
+The Oblivious Request Resource MUST publish an Access Description {{!I-D.schwartz-masque-access-descriptions}} over HTTP/3 containing the "ohttp.request" key, e.g.:
 
 ~~~JSON
 {
@@ -87,7 +87,7 @@ If this Access Description changes, and the resource receives a request whose "I
 
 ## Oblivious Proxy {#proxy}
 
-The Oblivious Proxy MUST publish an Access Description that includes the `ohttp.proxy` and `udp` keys, indicating support for CONNECT-UDP {{!I-D.ietf-masque-connect-udp}}.  It SHOULD also contain the `dns` key, indicating support for DNS over HTTPS {{!RFC8484}}, to enable the use of HTTPS records with CONNECT-UDP.
+The Oblivious Proxy MUST publish an Access Description that includes the "ohttp.proxy" and "udp" keys, indicating support for CONNECT-UDP {{!I-D.ietf-masque-connect-udp}}.  It SHOULD also contain the "dns" key, indicating support for DNS over HTTPS {{!RFC8484}}, to enable the use of HTTPS records with CONNECT-UDP.
 
 ~~~JSON
 {
@@ -286,20 +286,7 @@ This specification assumes that at most a small fraction of clients are acting o
 
 # IANA Considerations {#iana}
 
-IANA is requested to open a Specification Required registry entitled "HTTP Access Service Descriptors", with the following initial contents:
-
-| Key   | Specification   |
-|-------|-----------------|
-| dns   | (This document) |
-| udp   | (This document) |
-| ip    | (This document) |
-| ohttp | (This document) |
-
-IANA is requested to add the following entry to the "Well-Known URIs" registry
-
-| URI Suffix      | Change Controller | Reference       | Status    | Related Information |
-| --------------- | ----------------- | --------------- | --------- | ------------------- |
-| access-services | IETF              | (This document) | permanent | Sub-registry at (link)      |
+No IANA action is requested.
 
 --- back
 
