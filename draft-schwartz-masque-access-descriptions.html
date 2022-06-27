@@ -1193,7 +1193,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
       <h2 id="name-format">
 <a href="#section-3" class="section-number selfRef">3. </a><a href="#name-format" class="section-name selfRef">Format</a>
       </h2>
-<p id="section-3-1">An access service collection is defined by a JSON dictionary containing keys specified in the corresponding registry (<a href="#iana" class="xref">Section 6</a>).  Inclusion of each key is <span class="bcp14">OPTIONAL</span>.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-1">An access service collection is defined by a JSON dictionary containing keys specified in the corresponding registry (<a href="#iana" class="xref">Section 6</a>).  Inclusion of each key is <span class="bcp14">OPTIONAL</span>.  The corresponding media type is <code>application/access-services+json</code>.<a href="#section-3-1" class="pilcrow">¶</a></p>
 <p id="section-3-2">The "dns", "udp", and "ip" keys are each defined to hold a JSON dictionary containing the key "template" with a value that is a URI template suitable for configuring DNS over HTTPS, CONNECT-UDP, or CONNECT-IP, respectively.<a href="#section-3-2" class="pilcrow">¶</a></p>
 <p id="section-3-3">The "ohttp" key contains a dictionary with either or both of these keys:<a href="#section-3-3" class="pilcrow">¶</a></p>
 <ul class="normal">
@@ -1261,7 +1261,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
       <h2 id="name-discovery-from-an-origin">
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-discovery-from-an-origin" class="section-name selfRef">Discovery from an Origin</a>
       </h2>
-<p id="section-4-1">In cases where the HTTP access service is identified only by an origin (e.g. when configured as a Secure Web Proxy), operators can publish an associated access service collection at the path "/.well-known/access-services", with the Content-Type "application/json".<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-1">In cases where the HTTP access service is identified only by an origin (e.g. when configured as a Secure Web Proxy), operators can publish an associated access service collection at the path "/.well-known/access-services", with the Content-Type "application/access-services+json".<a href="#section-4-1" class="pilcrow">¶</a></p>
 <p id="section-4-2">When the "ohttp.request" URI appears in an Access Description at this location, all URIs on this origin (except the Oblivious Request URI) are presumed to be reachable as Oblivious Request Targets.<a href="#section-4-2" class="pilcrow">¶</a></p>
 <p id="section-4-3">Clients <span class="bcp14">MAY</span> fetch this Access Description and use the indicated services (in addition to any origin-scoped services) automatically.  Clients <span class="bcp14">SHOULD</span> use the description only while it is fresh according to its HTTP cache lifetime, refreshing it as needed.<a href="#section-4-3" class="pilcrow">¶</a></p>
 </section>
@@ -1307,7 +1307,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
           </tr>
         </tbody>
       </table>
-<p id="section-6-3">IANA is requested to add the following entry to the "Well-Known URIs" registry<a href="#section-6-3" class="pilcrow">¶</a></p>
+<p id="section-6-3">IANA is requested to add the following entry to the "Well-Known URIs" registry:<a href="#section-6-3" class="pilcrow">¶</a></p>
 <table class="center" id="table-2">
         <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
 <thead>
@@ -1329,6 +1329,29 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
           </tr>
         </tbody>
       </table>
+<p id="section-6-5">IANA is requested to add the following entry to the "application" sub-registry of the "Media Types" registry:<a href="#section-6-5" class="pilcrow">¶</a></p>
+<table class="center" id="table-3">
+        <caption><a href="#table-3" class="selfRef">Table 3</a></caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">Name</th>
+            <th class="text-left" rowspan="1" colspan="1">Template</th>
+            <th class="text-left" rowspan="1" colspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">access-services+json</td>
+            <td class="text-left" rowspan="1" colspan="1">application/access-services+json</td>
+            <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+          </tr>
+        </tbody>
+      </table>
+<ul class="normal ulEmpty">
+<li class="normal ulEmpty" id="section-6-7.1">
+          <p id="section-6-7.1.1">TODO: Full registration template for this Media Type.<a href="#section-6-7.1.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
 </section>
 </div>
 <section id="section-7">

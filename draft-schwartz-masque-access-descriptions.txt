@@ -109,7 +109,8 @@ Table of Contents
 
    An access service collection is defined by a JSON dictionary
    containing keys specified in the corresponding registry (Section 6).
-   Inclusion of each key is OPTIONAL.
+   Inclusion of each key is OPTIONAL.  The corresponding media type is
+   application/access-services+json.
 
    The "dns", "udp", and "ip" keys are each defined to hold a JSON
    dictionary containing the key "template" with a value that is a URI
@@ -174,7 +175,8 @@ Table of Contents
    In cases where the HTTP access service is identified only by an
    origin (e.g. when configured as a Secure Web Proxy), operators can
    publish an associated access service collection at the path "/.well-
-   known/access-services", with the Content-Type "application/json".
+   known/access-services", with the Content-Type "application/access-
+   services+json".
 
    When the "ohttp.request" URI appears in an Access Description at this
    location, all URIs on this origin (except the Oblivious Request URI)
@@ -210,7 +212,7 @@ Table of Contents
                                   Table 1
 
    IANA is requested to add the following entry to the "Well-Known URIs"
-   registry
+   registry:
 
    +=================+==========+=========+=============+==============+
    | URI Suffix      |Change    |Reference| Status      | Related      |
@@ -221,6 +223,20 @@ Table of Contents
    +-----------------+----------+---------+-------------+--------------+
 
                                   Table 2
+
+   IANA is requested to add the following entry to the "application"
+   sub-registry of the "Media Types" registry:
+
+        +======================+======================+===========+
+        | Name                 | Template             | Reference |
+        +======================+======================+===========+
+        | access-services+json | application/access-  | (This     |
+        |                      | services+json        | document) |
+        +----------------------+----------------------+-----------+
+
+                                  Table 3
+
+      TODO: Full registration template for this Media Type.
 
 7.  Normative References
 
