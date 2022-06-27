@@ -68,7 +68,7 @@ The proxy caches the response, ensuring that all clients share it during its fre
 
 ## Oblivious Request Resource
 
-The Oblivious Request Resource MUST publish an Access Description {{!I-D.schwartz-masque-access-descriptions}} over HTTP/3 containing the "ohttp.request" key, e.g.:
+The Oblivious Request Resource MUST publish an Access Description {{!I-D.schwartz-masque-access-descriptions}} containing the "ohttp.request" key, e.g.:
 
 ~~~JSON
 {
@@ -80,6 +80,8 @@ The Oblivious Request Resource MUST publish an Access Description {{!I-D.schwart
   }
 }
 ~~~
+
+This resource MUST be available over HTTP/3 {{!RFC9114}}, so that it can be accessed via the proxy's CONNECT-UDP service (see {{proxy}}).
 
 The Oblivious Request Resource MUST include a "strong validator" ETag ({{Section 2 of !RFC7232}}) in any response to a GET request for this access description, and MUST support the "If-Match" HTTP request header ({{Section 3 of !RFC7232}}).  The response MUST indicate "Cache-Control: public, no-transform, s-maxage=(...), immutable" {{!RFC9111}}{{!RFC8246}}.  For efficiency reasons, the max age SHOULD be at least 60 seconds, and preferably much longer.
 
