@@ -178,8 +178,8 @@ Table of Contents
    access description, and MUST support the "If-Match" HTTP request
    header (Section 3 of [RFC7232]).  The response MUST indicate "Cache-
    Control: public, no-transform, s-maxage=(...), immutable"
-   [I-D.ietf-httpbis-cache][RFC8246].  For efficiency reasons, the max
-   age SHOULD be at least 60 seconds, and preferably much longer.
+   [RFC9111][RFC8246].  For efficiency reasons, the max age SHOULD be at
+   least 60 seconds, and preferably much longer.
 
    If this Access Description changes, and the resource receives a
    request whose "If-Match" header identifies a previously served
@@ -193,7 +193,7 @@ Table of Contents
    the "ohttp.proxy" and "udp" keys, indicating support for CONNECT-UDP
    [I-D.ietf-masque-connect-udp].  It SHOULD also contain the "dns" key,
    indicating support for DNS over HTTPS [RFC8484], to enable the use of
-   HTTPS records with CONNECT-UDP.
+   HTTPS records [SVCB] with CONNECT-UDP.
 
    {
      "dns": {
@@ -222,11 +222,10 @@ Table of Contents
    as large as possible.
 
    Oblivious Proxies MUST preserve the ETag response header on cached
-   responses, and MUST add an Age header ([I-D.ietf-httpbis-cache-19],
-   Section 5.1) to all proxied responses.  Oblivious Proxies MUST
-   respect the "Cache-Control: immutable" directive, never revalidating
-   these cached entries, and MUST NOT accept PUSH_PROMISE frames from
-   the target.
+   responses, and MUST add an Age header ([RFC9111], Section 5.1) to all
+   proxied responses.  Oblivious Proxies MUST respect the "Cache-
+   Control: immutable" directive, never revalidating these cached
+   entries, and MUST NOT accept PUSH_PROMISE frames from the target.
 
    Proxies SHOULD employ defenses against malicious attempts to fill the
    cache.  Some possible defenses include:
@@ -496,20 +495,6 @@ Table of Contents
 
 9.1.  Normative References
 
-   [I-D.ietf-httpbis-cache]
-              Fielding, R. T., Nottingham, M., and J. Reschke, "HTTP
-              Caching", Work in Progress, Internet-Draft, draft-ietf-
-              httpbis-cache-19, 12 September 2021,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-
-              cache-19>.
-
-   [I-D.ietf-httpbis-cache-19]
-              Fielding, R. T., Nottingham, M., and J. Reschke, "HTTP
-              Caching", Work in Progress, Internet-Draft, draft-ietf-
-              httpbis-cache-19, 6 June 2022,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-
-              cache-19>.
-
    [I-D.ietf-masque-connect-udp]
               Schinazi, D., "Proxying UDP in HTTP", Work in Progress,
               Internet-Draft, draft-ietf-masque-connect-udp-15, 17 June
@@ -556,6 +541,11 @@ Table of Contents
               (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
               <https://www.rfc-editor.org/rfc/rfc8484>.
 
+   [RFC9111]  Fielding, R., Ed., Nottingham, M., Ed., and J. Reschke,
+              Ed., "HTTP Caching", STD 98, RFC 9111,
+              DOI 10.17487/RFC9111, June 2022,
+              <https://www.rfc-editor.org/rfc/rfc9111>.
+
 9.2.  Informative References
 
    [I-D.wood-key-consistency]
@@ -564,6 +554,13 @@ Table of Contents
               Internet-Draft, draft-wood-key-consistency-02, 4 March
               2022, <https://datatracker.ietf.org/doc/html/draft-wood-
               key-consistency-02>.
+
+   [SVCB]     Schwartz, B., Bishop, M., and E. Nygren, "Service binding
+              and parameter specification via the DNS (DNS SVCB and
+              HTTPS RRs)", Work in Progress, Internet-Draft, draft-ietf-
+              dnsop-svcb-https-10, 24 May 2022,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-
+              svcb-https-10>.
 
 Acknowledgments
 
