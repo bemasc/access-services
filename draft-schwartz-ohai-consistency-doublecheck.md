@@ -51,7 +51,7 @@ This draft is an instantiation of the "Single Proxy Discovery" architecture for 
 
 # Overview
 
-In the Key Consistency Double-Check procedure, the Client emits two requests: one to the Proxy, and one through the Proxy to the Target.  The Proxy will forward the first request to the Target if the response is not in cache.
+In the Key Consistency Double-Check procedure, the Client emits two HTTP GET requests: one to the Proxy, and one through the Proxy to the Target.  The Proxy will forward the first request to the Target if the response is not in cache.
 
 ~~~
                 +--------+       +-------+      +--------+
@@ -124,10 +124,10 @@ If the proxy offers a DNS over HTTPS resolver, it MUST NOT enable EDNS Client Su
 
 The Client is assumed to know an "https" URI of an Oblivious Request Resource's Access Description.  To use that Request Resource, it MUST perform the following "double-check" procedure:
 
-1. Send a GET request to the Oblivious Proxy's template with `request_uri` set to the Access Description URI.
+1. Send a GET request to the Oblivious Proxy's template (`ohttp.proxy.template`) with `request_uri` set to the Access Description URI.
 1. Record the response (A).
 1. Check that response A's "Cache-Control" values indicates "public" and "immutable".
-1. Fetch the Access Description URI from its origin via CONNECT-UDP, with "If-Match" set to response A's ETag.
+1. Fetch the Access Description URI from its origin using a GET request tunneled via CONNECT-UDP, with "If-Match" set to response A's ETag.
 1. Record the response (B).
 1. Check that responses A and B were successful and the contents are identical, otherwise fail.
 
@@ -204,7 +204,7 @@ capsule-protocol = ?1
                               capsule-protocol = ?1
 ~~~
 
-The client now has a CONNECT-UDP tunnel to `doh.example.com`, over which it performs the following request using HTTP/3:
+The client now has a CONNECT-UDP tunnel to `doh.example.com`, over which it performs the following GET request using HTTP/3:
 
 ~~~
 HEADERS
@@ -249,9 +249,9 @@ This procedure only needs to be repeated if the Access Description has expired. 
 
 ## Thundering Herds
 
-All clients of the same proxy and target will have locally cached Access Descriptions with the same expiration time.  When this entry expires, all active clients will send refresh requests to the proxy at their next request.  Proxies SHOULD use "request coalescing" to avoid duplicate cache refresh requests to the target.
+All clients of the same proxy and target will have locally cached Access Descriptions with the same expiration time.  When this entry expires, all active clients will send refresh GET requests to the proxy at their next request.  Proxies SHOULD use "request coalescing" to avoid duplicate cache-refresh requests to the target.
 
-If the Access Description has changed, these clients will initiate requests through the proxy to the target to double-check the new contents.  Proxies and targets MAY use an HTTP 503 response with a "Retry-After" header to manage load spikes.
+If the Access Description has changed, these clients will initiate GET requests through the proxy to the target to double-check the new contents.  Proxies and targets MAY use an HTTP 503 response with a "Retry-After" header to manage load spikes.
 
 # Security Considerations
 
@@ -269,7 +269,7 @@ A malicious target could attempt to rotate its entry in the proxy's cache in sev
 
 * Using HTTP PUSH_PROMISE frames.  This attack is prevented by disabling PUSH_PROMISE at the proxy ({{proxy}}).
 * By also acting as a client and sending requests designed to replace the Access Description in the cache before it expires:
-  - By sending requests with a "Cache-Control: no-cache" or similar directive.  This is prevented by the response's "Cache-Control: public, immutable" directives, which are verified by the client ({{client}}).
+  - By sending GET requests with a "Cache-Control: no-cache" or similar directive.  This is prevented by the response's "Cache-Control: public, immutable" directives, which are verified by the client ({{client}}).
   - By filling the cache with new entries, causing its previous Access Description to be evicted.  {{proxy}} describes some possible mitigations.
 
 A malicious target could attempt to link different requests for the Access Description, in order to link the Oblivious HTTP requests that follow shortly after.  This is prevented by fully isolating each request ({{client}}), and by disabling EDNS Client Subnet ({{proxy}}).
