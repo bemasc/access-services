@@ -111,7 +111,7 @@ The Oblivious Proxy MUST publish an Access Description that includes the "ohttp.
 
 The Oblivious Proxy Resources MUST allow use of the GET method to retrieve small JSON responses, and SHOULD make ample cache space available in order to avoid eviction of Access Descriptions.  The proxy SHOULD share cache state among all clients, to ensure that they use the same Access Descriptions for each Oblivious Request Resource.  If the cache must be partitioned for architectural or performance reasons, operators SHOULD keep the number of users in each partition as large as possible.
 
-Oblivious Proxies MUST preserve the ETag response header on cached responses, and MUST add an Age header ({{!RFC9111, Section 5.1}}) to all proxied responses.  Oblivious Proxies MUST respect the "Cache-Control: immutable" directive, never revalidating these cached entries, and MUST NOT accept PUSH_PROMISE frames from the target.
+Oblivious Proxies MUST preserve the ETag response header on cached responses, and MUST add an Age header ({{!RFC9111, Section 5.1}}) to all proxied responses.  Oblivious Proxies MUST respect the "Cache-Control: immutable" directive, and MUST NOT revalidate fresh immutable cache entries in response to any incoming requests.  (Note that this is different from the general recommendation in {{Section 2.1 of !RFC8246}}).  Oblivious Proxies also MUST NOT accept PUSH_PROMISE frames from the target.
 
 Proxies SHOULD employ defenses against malicious attempts to fill the cache.  Some possible defenses include:
 
@@ -272,7 +272,7 @@ A malicious target could attempt to rotate its entry in the proxy's cache in sev
 
 * Using HTTP PUSH_PROMISE frames.  This attack is prevented by disabling PUSH_PROMISE at the proxy ({{proxy}}).
 * By also acting as a client and sending requests designed to replace the Access Description in the cache before it expires:
-  - By sending GET requests with a "Cache-Control: no-cache" or similar directive.  This is prevented by the response's "Cache-Control: public, immutable" directives, which are verified by the client ({{client}}).
+  - By sending GET requests with a "Cache-Control: no-cache" or similar directive.  This is prevented by the response's "Cache-Control: public, immutable" directives, which are verified by the client ({{client}}), and by the proxy's obligation to to respect these directives strictly ({{proxy}}).
   - By filling the cache with new entries, causing its previous Access Description to be evicted.  {{proxy}} describes some possible mitigations.
 
 A malicious target could attempt to link different requests for the Access Description, in order to link the Oblivious HTTP requests that follow shortly after.  This is prevented by fully isolating each request ({{client}}), and by disabling EDNS Client Subnet ({{proxy}}).
