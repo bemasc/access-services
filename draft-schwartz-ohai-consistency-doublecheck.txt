@@ -227,10 +227,10 @@ Table of Contents
    Oblivious Proxies MUST preserve the ETag response header on cached
    responses, and MUST add an Age header ([RFC9111], Section 5.1) to all
    proxied responses.  Oblivious Proxies MUST respect the "Cache-
-   Control: immutable" directive, and MUST NOT revalidate these cached
-   entries in response to any incoming requests.  (Note that this is
-   different from the general recommendation in Section 2.1 of
-   [RFC8246]).  Oblivious Proxies also MUST NOT accept PUSH_PROMISE
+   Control: immutable" directive, and MUST NOT revalidate fresh
+   immutable cache entries in response to any incoming requests.  (Note
+   that this is different from the general recommendation in Section 2.1
+   of [RFC8246]).  Oblivious Proxies also MUST NOT accept PUSH_PROMISE
    frames from the target.
 
    Proxies SHOULD employ defenses against malicious attempts to fill the
