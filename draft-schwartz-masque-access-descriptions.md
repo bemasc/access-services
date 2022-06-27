@@ -48,7 +48,7 @@ This specification provides a unified format for describing a collection of such
 
 # Format
 
-An access service collection is defined by a JSON dictionary containing keys specified in the corresponding registry ({{iana}}).  Inclusion of each key is OPTIONAL.
+An access service collection is defined by a JSON dictionary containing keys specified in the corresponding registry ({{iana}}).  Inclusion of each key is OPTIONAL.  The corresponding media type is `application/access-services+json`.
 
 The "dns", "udp", and "ip" keys are each defined to hold a JSON dictionary containing the key "template" with a value that is a URI template suitable for configuring DNS over HTTPS, CONNECT-UDP, or CONNECT-IP, respectively.
 
@@ -99,7 +99,7 @@ If the Access Description is for a general-purpose proxy, all Oblivious Request 
 
 # Discovery from an Origin {#well-known}
 
-In cases where the HTTP access service is identified only by an origin (e.g. when configured as a Secure Web Proxy), operators can publish an associated access service collection at the path "/.well-known/access-services", with the Content-Type "application/json".
+In cases where the HTTP access service is identified only by an origin (e.g. when configured as a Secure Web Proxy), operators can publish an associated access service collection at the path "/.well-known/access-services", with the Content-Type "application/access-services+json".
 
 When the "ohttp.request" URI appears in an Access Description at this location, all URIs on this origin (except the Oblivious Request URI) are presumed to be reachable as Oblivious Request Targets.
 
@@ -122,11 +122,19 @@ IANA is requested to open a Specification Required registry entitled "HTTP Acces
 | ip    | (This document) |
 | ohttp | (This document) |
 
-IANA is requested to add the following entry to the "Well-Known URIs" registry
+IANA is requested to add the following entry to the "Well-Known URIs" registry:
 
 | URI Suffix      | Change Controller | Reference       | Status      | Related Information |
 | --------------- | ----------------- | --------------- | ----------- | ------------------- |
 | access-services | IETF              | (This document) | provisional | Sub-registry at (link)      |
+
+IANA is requested to add the following entry to the "application" sub-registry of the "Media Types" registry:
+
+| Name                 | Template                         | Reference       |
+| -------------------- | -------------------------------- | --------------- |
+| access-services+json | application/access-services+json | (This document) |
+
+> TODO: Full registration template for this Media Type.
 
 --- back
 
