@@ -107,7 +107,7 @@ The Oblivious Proxy MUST publish an Access Description that includes the "ohttp.
 ~~~
 {: title="Example Proxy Access Description"}
 
-The Oblivious Proxy Resources MUST allow use of the GET method to retrieve small JSON responses, and SHOULD make ample cache space available in order to cache Access Descriptions.  Each proxy instance (as defined by its external-facing network interface) MUST share cache state among all clients to ensure that they use the same Access Descriptions for each Oblivious Request Resource.
+The Oblivious Proxy Resources MUST allow use of the GET method to retrieve small JSON responses, and SHOULD make ample cache space available in order to avoid eviction of Access Descriptions.  The proxy SHOULD share cache state among all clients, to ensure that they use the same Access Descriptions for each Oblivious Request Resource.  If the cache must be partitioned for architectural or performance reasons, operators SHOULD keep the number of users in each partition as large as possible.
 
 Oblivious Proxies MUST preserve the ETag response header on cached responses, and MUST add an Age header ({{!I-D.ietf-httpbis-cache-19, Section 5.1}}) to all proxied responses.  Oblivious Proxies MUST respect the "Cache-Control: immutable" directive, never revalidating these cached entries, and MUST NOT accept PUSH_PROMISE frames from the target.
 
