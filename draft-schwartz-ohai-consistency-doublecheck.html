@@ -1341,11 +1341,13 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 </li>
           <li id="section-4.3-2.3">Check that response A's "Cache-Control" values indicates "public" and "immutable".<a href="#section-4.3-2.3" class="pilcrow">¶</a>
 </li>
-          <li id="section-4.3-2.4">Fetch the Access Description URI from its origin using a GET request tunneled via CONNECT-UDP, with "If-Match" set to response A's ETag.<a href="#section-4.3-2.4" class="pilcrow">¶</a>
+          <li id="section-4.3-2.4">Establish a CONNECT-UDP tunnel through the proxy to the Access Description URI's origin.<a href="#section-4.3-2.4" class="pilcrow">¶</a>
 </li>
-          <li id="section-4.3-2.5">Record the response (B).<a href="#section-4.3-2.5" class="pilcrow">¶</a>
+          <li id="section-4.3-2.5">Fetch the Access Description URI through this tunnel, using a GET request with "If-Match" set to response A's ETag.<a href="#section-4.3-2.5" class="pilcrow">¶</a>
 </li>
-          <li id="section-4.3-2.6">Check that responses A and B were successful and the contents are identical, otherwise fail.<a href="#section-4.3-2.6" class="pilcrow">¶</a>
+          <li id="section-4.3-2.6">Record the response (B).<a href="#section-4.3-2.6" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.3-2.7">Check that responses A and B were successful and the contents are identical, otherwise fail.<a href="#section-4.3-2.7" class="pilcrow">¶</a>
 </li>
         </ol>
 <p id="section-4.3-3">This procedure ensures that the Access Description is authentic and will be shared by all users of this proxy.  Once response A or B expires, the client <span class="bcp14">MUST</span> refresh it before continuing to use this Access Description, and <span class="bcp14">MUST</span> repeat the "double-check" process if either response changes.<a href="#section-4.3-3" class="pilcrow">¶</a></p>

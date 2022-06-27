@@ -260,13 +260,15 @@ Table of Contents
    3.  Check that response A's "Cache-Control" values indicates "public"
        and "immutable".
 
-   4.  Fetch the Access Description URI from its origin using a GET
-       request tunneled via CONNECT-UDP, with "If-Match" set to response
-       A's ETag.
+   4.  Establish a CONNECT-UDP tunnel through the proxy to the Access
+       Description URI's origin.
 
-   5.  Record the response (B).
+   5.  Fetch the Access Description URI through this tunnel, using a GET
+       request with "If-Match" set to response A's ETag.
 
-   6.  Check that responses A and B were successful and the contents are
+   6.  Record the response (B).
+
+   7.  Check that responses A and B were successful and the contents are
        identical, otherwise fail.
 
    This procedure ensures that the Access Description is authentic and
