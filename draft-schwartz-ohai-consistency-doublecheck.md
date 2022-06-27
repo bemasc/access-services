@@ -81,13 +81,13 @@ The Oblivious Request Resource MUST publish an Access Description {{!I-D.schwart
 }
 ~~~
 
-The Oblivious Request Resource MUST include a "strong validator" ETag ({{Section 2 of !RFC7232}}) in any response to a GET request for this access description, and MUST support the "If-Match" HTTP request header ({{Section 3 of !RFC7232}}).  The response MUST indicate "Cache-Control: public, no-transform, s-maxage=(...), immutable" {{!I-D.ietf-httpbis-cache}}{{!RFC8246}}.  For efficiency reasons, the max age SHOULD be at least 60 seconds, and preferably much longer.
+The Oblivious Request Resource MUST include a "strong validator" ETag ({{Section 2 of !RFC7232}}) in any response to a GET request for this access description, and MUST support the "If-Match" HTTP request header ({{Section 3 of !RFC7232}}).  The response MUST indicate "Cache-Control: public, no-transform, s-maxage=(...), immutable" {{!RFC9111}}{{!RFC8246}}.  For efficiency reasons, the max age SHOULD be at least 60 seconds, and preferably much longer.
 
 If this Access Description changes, and the resource receives a request whose "If-Match" header identifies a previously served version that has not yet expired, it MUST return a success response containing the previous version.  This response MAY indicate "Cache-Control: private".
 
 ## Oblivious Proxy {#proxy}
 
-The Oblivious Proxy MUST publish an Access Description that includes the "ohttp.proxy" and "udp" keys, indicating support for CONNECT-UDP {{!I-D.ietf-masque-connect-udp}}.  It SHOULD also contain the "dns" key, indicating support for DNS over HTTPS {{!RFC8484}}, to enable the use of HTTPS records with CONNECT-UDP.
+The Oblivious Proxy MUST publish an Access Description that includes the "ohttp.proxy" and "udp" keys, indicating support for CONNECT-UDP {{!I-D.ietf-masque-connect-udp}}.  It SHOULD also contain the "dns" key, indicating support for DNS over HTTPS {{!RFC8484}}, to enable the use of HTTPS records {{?SVCB=I-D.draft-ietf-dnsop-svcb-https}} with CONNECT-UDP.
 
 ~~~JSON
 {
@@ -109,7 +109,7 @@ The Oblivious Proxy MUST publish an Access Description that includes the "ohttp.
 
 The Oblivious Proxy Resources MUST allow use of the GET method to retrieve small JSON responses, and SHOULD make ample cache space available in order to avoid eviction of Access Descriptions.  The proxy SHOULD share cache state among all clients, to ensure that they use the same Access Descriptions for each Oblivious Request Resource.  If the cache must be partitioned for architectural or performance reasons, operators SHOULD keep the number of users in each partition as large as possible.
 
-Oblivious Proxies MUST preserve the ETag response header on cached responses, and MUST add an Age header ({{!I-D.ietf-httpbis-cache-19, Section 5.1}}) to all proxied responses.  Oblivious Proxies MUST respect the "Cache-Control: immutable" directive, never revalidating these cached entries, and MUST NOT accept PUSH_PROMISE frames from the target.
+Oblivious Proxies MUST preserve the ETag response header on cached responses, and MUST add an Age header ({{!RFC9111, Section 5.1}}) to all proxied responses.  Oblivious Proxies MUST respect the "Cache-Control: immutable" directive, never revalidating these cached entries, and MUST NOT accept PUSH_PROMISE frames from the target.
 
 Proxies SHOULD employ defenses against malicious attempts to fill the cache.  Some possible defenses include:
 
