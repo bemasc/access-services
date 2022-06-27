@@ -4,8 +4,8 @@
 
 ohai                                                      B. M. Schwartz
 Internet-Draft                                                Google LLC
-Intended status: Standards Track                             26 May 2022
-Expires: 27 November 2022
+Intended status: Standards Track                            27 June 2022
+Expires: 29 December 2022
 
 
          Key Consistency for Oblivious HTTP by Double-Checking
@@ -44,7 +44,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 27 November 2022.
+   This Internet-Draft will expire on 29 December 2022.
 
 Copyright Notice
 
@@ -140,9 +140,9 @@ Table of Contents
 3.  Overview
 
    In the Key Consistency Double-Check procedure, the Client emits two
-   requests: one to the Proxy, and one through the Proxy to the Target.
-   The Proxy will forward the first request to the Target if the
-   response is not in cache.
+   HTTP GET requests: one to the Proxy, and one through the Proxy to the
+   Target.  The Proxy will forward the first request to the Target if
+   the response is not in cache.
 
                    +--------+       +-------+      +--------+
                    |        |<=====>|       |<---->|        |
@@ -247,16 +247,18 @@ Table of Contents
    Resource's Access Description.  To use that Request Resource, it MUST
    perform the following "double-check" procedure:
 
-   1.  Send a GET request to the Oblivious Proxy's template with
-       request_uri set to the Access Description URI.
+   1.  Send a GET request to the Oblivious Proxy's template
+       (ohttp.proxy.template) with request_uri set to the Access
+       Description URI.
 
    2.  Record the response (A).
 
    3.  Check that response A's "Cache-Control" values indicates "public"
        and "immutable".
 
-   4.  Fetch the Access Description URI from its origin via CONNECT-UDP,
-       with "If-Match" set to response A's ETag.
+   4.  Fetch the Access Description URI from its origin using a GET
+       request tunneled via CONNECT-UDP, with "If-Match" set to response
+       A's ETag.
 
    5.  Record the response (B).
 
@@ -344,7 +346,7 @@ Table of Contents
                                 capsule-protocol = ?1
 
    The client now has a CONNECT-UDP tunnel to doh.example.com, over
-   which it performs the following request using HTTP/3:
+   which it performs the following GET request using HTTP/3:
 
    HEADERS
    :method = GET
@@ -411,12 +413,12 @@ Table of Contents
 
    All clients of the same proxy and target will have locally cached
    Access Descriptions with the same expiration time.  When this entry
-   expires, all active clients will send refresh requests to the proxy
-   at their next request.  Proxies SHOULD use "request coalescing" to
-   avoid duplicate cache refresh requests to the target.
+   expires, all active clients will send refresh GET requests to the
+   proxy at their next request.  Proxies SHOULD use "request coalescing"
+   to avoid duplicate cache-refresh requests to the target.
 
    If the Access Description has changed, these clients will initiate
-   requests through the proxy to the target to double-check the new
+   GET requests through the proxy to the target to double-check the new
    contents.  Proxies and targets MAY use an HTTP 503 response with a
    "Retry-After" header to manage load spikes.
 
@@ -448,10 +450,10 @@ Table of Contents
    *  By also acting as a client and sending requests designed to
       replace the Access Description in the cache before it expires:
 
-      -  By sending requests with a "Cache-Control: no-cache" or similar
-         directive.  This is prevented by the response's "Cache-Control:
-         public, immutable" directives, which are verified by the client
-         (Section 4.3).
+      -  By sending GET requests with a "Cache-Control: no-cache" or
+         similar directive.  This is prevented by the response's "Cache-
+         Control: public, immutable" directives, which are verified by
+         the client (Section 4.3).
 
       -  By filling the cache with new entries, causing its previous
          Access Description to be evicted.  Section 4.2 describes some
@@ -502,15 +504,15 @@ Table of Contents
    [I-D.ietf-httpbis-cache-19]
               Fielding, R. T., Nottingham, M., and J. Reschke, "HTTP
               Caching", Work in Progress, Internet-Draft, draft-ietf-
-              httpbis-cache-19, 12 September 2021,
+              httpbis-cache-19, 6 June 2022,
               <https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-
               cache-19>.
 
    [I-D.ietf-masque-connect-udp]
               Schinazi, D., "Proxying UDP in HTTP", Work in Progress,
-              Internet-Draft, draft-ietf-masque-connect-udp-12, 3 May
+              Internet-Draft, draft-ietf-masque-connect-udp-15, 17 June
               2022, <https://datatracker.ietf.org/doc/html/draft-ietf-
-              masque-connect-udp-12>.
+              masque-connect-udp-15>.
 
    [I-D.ietf-ohai-ohttp]
               Thomson, M. and C. A. Wood, "Oblivious HTTP", Work in

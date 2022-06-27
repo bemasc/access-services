@@ -4,8 +4,8 @@
 
 Multiplexed Application Substrate over QUIC Encryption    B. M. Schwartz
 Internet-Draft                                                Google LLC
-Intended status: Standards Track                             26 May 2022
-Expires: 27 November 2022
+Intended status: Standards Track                            27 June 2022
+Expires: 29 December 2022
 
 
                 HTTP Access Service Description Objects
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 27 November 2022.
+   This Internet-Draft will expire on 29 December 2022.
 
 Copyright Notice
 
@@ -234,9 +234,9 @@ Table of Contents
 
    [I-D.draft-ietf-masque-connect-udp]
               Schinazi, D., "Proxying UDP in HTTP", Work in Progress,
-              Internet-Draft, draft-ietf-masque-connect-udp-12, 3 May
+              Internet-Draft, draft-ietf-masque-connect-udp-15, 17 June
               2022, <https://datatracker.ietf.org/doc/html/draft-ietf-
-              masque-connect-udp-12>.
+              masque-connect-udp-15>.
 
    [I-D.draft-ietf-ohai-ohttp]
               Thomson, M. and C. A. Wood, "Oblivious HTTP", Work in
