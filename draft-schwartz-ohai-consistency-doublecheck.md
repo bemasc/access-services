@@ -129,7 +129,8 @@ The Client is assumed to know an "https" URI of an Oblivious Request Resource's 
 1. Send a GET request to the Oblivious Proxy's template (`ohttp.proxy.template`) with `request_uri` set to the Access Description URI.
 1. Record the response (A).
 1. Check that response A's "Cache-Control" values indicates "public" and "immutable".
-1. Fetch the Access Description URI from its origin using a GET request tunneled via CONNECT-UDP, with "If-Match" set to response A's ETag.
+1. Establish a CONNECT-UDP tunnel through the proxy to the Access Description URI's origin.
+1. Fetch the Access Description URI through this tunnel, using a GET request with "If-Match" set to response A's ETag.
 1. Record the response (B).
 1. Check that responses A and B were successful and the contents are identical, otherwise fail.
 
