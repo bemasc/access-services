@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-06-28T01:10:24.327265+00:00",
+  "timestamp": "2022-06-30T01:04:46.215715+00:00",
   "repo": "bemasc/access-services",
   "labels": [
     {
@@ -134,7 +134,7 @@
       "labels": [],
       "body": "This is a bit much.  Unless a specific version is necessary for specific reasons, specification should use the generic HTTP (RFC 9110).  In this case, the request is being made as a one-off.  That should be enough to use HTTP/1.1 even.",
       "createdAt": "2022-06-27T05:32:38Z",
-      "updatedAt": "2022-06-28T00:16:49Z",
+      "updatedAt": "2022-06-28T19:04:58Z",
       "closedAt": "2022-06-27T15:05:58Z",
       "comments": [
         {
@@ -150,6 +150,13 @@
           "body": "I disagree with that rationale, but it's your draft.",
           "createdAt": "2022-06-28T00:16:49Z",
           "updatedAt": "2022-06-28T00:16:49Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "OWNER",
+          "body": "OK, good to know.  I think that requiring HTTP/3 at the target amounts to less implementation work (and less specification text) than requiring Legacy CONNECT at the proxy, but I'm happy to flip that requirement if the consensus tilts the other way.",
+          "createdAt": "2022-06-28T19:04:58Z",
+          "updatedAt": "2022-06-28T19:04:58Z"
         }
       ]
     },
