@@ -4,8 +4,8 @@
 
 Multiplexed Application Substrate over QUIC Encryption    B. M. Schwartz
 Internet-Draft                                                Google LLC
-Intended status: Standards Track                            27 June 2022
-Expires: 29 December 2022
+Intended status: Standards Track                             1 July 2022
+Expires: 2 January 2023
 
 
                 HTTP Access Service Description Objects
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 29 December 2022.
+   This Internet-Draft will expire on 2 January 2023.
 
 Copyright Notice
 
@@ -120,19 +120,19 @@ Table of Contents
    The "ohttp" key contains a dictionary with either or both of these
    keys:
 
-   *  "proxy", containing a dictionary with a "template" key indicating
-      the Oblivious Proxy's resource mapping.  The template MUST contain
-      a "request_uri" variable indicating the Oblivious Request
+   *  "relay", containing a dictionary with a "template" key indicating
+      the Oblivious Relay's resource mapping.  The template MUST contain
+      a "gateway_uri" variable indicating the Oblivious Gateway
       Resource.
 
-   *  "request", containing a dictionary with a "uri" key indicating the
-      Oblivious Request Resource and a "key" key conveying its KeyConfig
+   *  "gateway", containing a dictionary with a "uri" key indicating the
+      Oblivious Gateway Resource and a "key" key conveying its KeyConfig
       in base64.
 
    If the Access Description is for a general-purpose proxy, all
-   Oblivious Request Resources and Targets (respectively) are presumed
-   to be supported; otherwise the supported Resources and Targets must
-   be understood from context (but see Section 4).
+   Oblivious Gateways and proxy targets (respectively) are presumed to
+   be supported; otherwise the supported Gateways and targets must be
+   understood from context (but see Section 4).
 
 3.1.  Examples
 
@@ -148,8 +148,8 @@ Table of Contents
        "template": "https://proxy.example.org/masque{?target,ip_proto}"
      },
      "ohttp": {
-       "proxy": {
-         "template": "https://proxy.example.org/ohttp{?request_uri}"
+       "relay": {
+         "template": "https://proxy.example.org/ohttp{?gateway_uri}"
        }
      }
    }
@@ -161,7 +161,7 @@ Table of Contents
        "template": "https://doh.example.com/dns-query{?dns}",
      },
      "ohttp": {
-       "request": {
+       "gateway": {
          "uri": "https://example.com/ohttp/",
          "key": "(KeyConfig in Base64)"
        }
@@ -178,9 +178,9 @@ Table of Contents
    known/access-services", with the Content-Type "application/access-
    services+json".
 
-   When the "ohttp.request" URI appears in an Access Description at this
-   location, all URIs on this origin (except the Oblivious Request URI)
-   are presumed to be reachable as Oblivious Request Targets.
+   When the "ohttp.gateway" URI appears in an Access Description at this
+   location, all URIs on this origin (except the Oblivious Gateway URI)
+   are presumed to be reachable as Oblivious Targets.
 
    Clients MAY fetch this Access Description and use the indicated
    services (in addition to any origin-scoped services) automatically.
