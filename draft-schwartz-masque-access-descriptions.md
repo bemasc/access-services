@@ -1,6 +1,6 @@
 ---
 title: "HTTP Access Service Description Objects"
-abbrev: "HTTP Access Service Descriptions"
+abbrev: "HTTP Access Descriptions"
 category: std
 
 docname: draft-schwartz-masque-access-descriptions-latest
@@ -54,10 +54,10 @@ The "dns", "udp", and "ip" keys are each defined to hold a JSON dictionary conta
 
 The "ohttp" key contains a dictionary with either or both of these keys:
 
-* "proxy", containing a dictionary with a "template" key indicating the Oblivious Proxy's resource mapping.  The template MUST contain a "request_uri" variable indicating the Oblivious Request Resource.
-* "request", containing a dictionary with a "uri" key indicating the Oblivious Request Resource and a "key" key conveying its KeyConfig in base64.
+* "relay", containing a dictionary with a "template" key indicating the Oblivious Relay's resource mapping.  The template MUST contain a "gateway_uri" variable indicating the Oblivious Gateway Resource.
+* "gateway", containing a dictionary with a "uri" key indicating the Oblivious Gateway Resource and a "key" key conveying its KeyConfig in base64.
 
-If the Access Description is for a general-purpose proxy, all Oblivious Request Resources and Targets (respectively) are presumed to be supported; otherwise the supported Resources and Targets must be understood from context (but see {{well-known}}).
+If the Access Description is for a general-purpose proxy, all Oblivious Gateways and proxy targets (respectively) are presumed to be supported; otherwise the supported Gateways and targets must be understood from context (but see {{well-known}}).
 
 ## Examples
 
@@ -74,8 +74,8 @@ If the Access Description is for a general-purpose proxy, all Oblivious Request 
     "template": "https://proxy.example.org/masque{?target,ip_proto}"
   },
   "ohttp": {
-    "proxy": {
-      "template": "https://proxy.example.org/ohttp{?request_uri}"
+    "relay": {
+      "template": "https://proxy.example.org/ohttp{?gateway_uri}"
     }
   }
 }
@@ -88,7 +88,7 @@ If the Access Description is for a general-purpose proxy, all Oblivious Request 
     "template": "https://doh.example.com/dns-query{?dns}",
   },
   "ohttp": {
-    "request": {
+    "gateway": {
       "uri": "https://example.com/ohttp/",
       "key": "(KeyConfig in Base64)"
     }
@@ -101,7 +101,7 @@ If the Access Description is for a general-purpose proxy, all Oblivious Request 
 
 In cases where the HTTP access service is identified only by an origin (e.g. when configured as a Secure Web Proxy), operators can publish an associated access service collection at the path "/.well-known/access-services", with the Content-Type "application/access-services+json".
 
-When the "ohttp.request" URI appears in an Access Description at this location, all URIs on this origin (except the Oblivious Request URI) are presumed to be reachable as Oblivious Request Targets.
+When the "ohttp.gateway" URI appears in an Access Description at this location, all URIs on this origin (except the Oblivious Gateway URI) are presumed to be reachable as Oblivious Targets.
 
 Clients MAY fetch this Access Description and use the indicated services (in addition to any origin-scoped services) automatically.  Clients SHOULD use the description only while it is fresh according to its HTTP cache lifetime, refreshing it as needed.
 
