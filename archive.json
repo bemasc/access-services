@@ -1,0 +1,213 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2022-09-15T01:24:13.622405+00:00",
+  "repo": "bemasc/access-services",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [
+    {
+      "number": 1,
+      "id": "I_kwDOHIcqgM5Mm5Ea",
+      "title": "Confusion about servers and resources",
+      "url": "https://github.com/bemasc/access-services/issues/1",
+      "state": "CLOSED",
+      "author": "martinthomson",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "In draft-schwartz-ohai-consistency-doublecheck, it was not sufficiently clear to me after an initial that this is exploiting the use of different methods on the same resource.  GET[^1] requests are used to convey configuration about the resources where a POST is used to initiate some action.  This point could be sharpened some.\r\n\r\n[^1]: If it weren't for the fact that OPTIONS in uncacheable, that would have been a better choice, but GET works here.",
+      "createdAt": "2022-06-27T05:25:51Z",
+      "updatedAt": "2022-06-27T14:31:57Z",
+      "closedAt": "2022-06-27T14:31:56Z",
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "OWNER",
+          "body": "I don't think this is true.  The only request methods involved in this specification are GET and CONNECT.  I've adjusted the text to emphasize this.",
+          "createdAt": "2022-06-27T14:31:56Z",
+          "updatedAt": "2022-06-27T14:31:56Z"
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "id": "I_kwDOHIcqgM5Mm5sj",
+      "title": "Granularity of cache at proxy",
+      "url": "https://github.com/bemasc/access-services/issues/2",
+      "state": "CLOSED",
+      "author": "martinthomson",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": ">  Each proxy instance (as defined by its external-facing network interface) MUST share cache state among all clients to ensure that they use the same Access Descriptions for each Oblivious Request Resource.\r\n\r\nI believe that the right answer is that all oblivious proxy resources at the same server need to share a cache as long as the oblivious request resource is the same.  The external-facing network interface doesn't seem right.  I get that there are proxies that won't want to share state across multiple worker instances, but that might be dealt with using an exception.",
+      "createdAt": "2022-06-27T05:29:20Z",
+      "updatedAt": "2022-06-27T14:36:56Z",
+      "closedAt": "2022-06-27T14:36:56Z",
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "OWNER",
+          "body": "OK, I've adjusted the language here to be less specific and focus on the objective, rather than the mechanism.",
+          "createdAt": "2022-06-27T14:36:56Z",
+          "updatedAt": "2022-06-27T14:36:56Z"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "id": "I_kwDOHIcqgM5Mm56e",
+      "title": "Media type",
+      "url": "https://github.com/bemasc/access-services/issues/3",
+      "state": "CLOSED",
+      "author": "martinthomson",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "`application/json` isn't really good enough for this sort of thing.",
+      "createdAt": "2022-06-27T05:30:38Z",
+      "updatedAt": "2022-06-27T14:56:03Z",
+      "closedAt": "2022-06-27T14:56:02Z",
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "OWNER",
+          "body": "OK, changed to `application/access-services+json` in https://github.com/bemasc/access-services/commit/47aa8ef30f371cf20cd36a516c2cf65745190a9e.",
+          "createdAt": "2022-06-27T14:56:02Z",
+          "updatedAt": "2022-06-27T14:56:02Z"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "id": "I_kwDOHIcqgM5Mm6O0",
+      "title": "HTTP/3 requirement",
+      "url": "https://github.com/bemasc/access-services/issues/4",
+      "state": "CLOSED",
+      "author": "martinthomson",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "This is a bit much.  Unless a specific version is necessary for specific reasons, specification should use the generic HTTP (RFC 9110).  In this case, the request is being made as a one-off.  That should be enough to use HTTP/1.1 even.",
+      "createdAt": "2022-06-27T05:32:38Z",
+      "updatedAt": "2022-06-28T19:04:58Z",
+      "closedAt": "2022-06-27T15:05:58Z",
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "OWNER",
+          "body": "HTTP/3 is specifically required because we need to be able to fetch the config via the proxy, and the proxy is only required to offer CONNECT-UDP.  To remove the HTTP/3 requirement on the target, we would need to add a \"legacy CONNECT\" requirement on the proxy.  This is not appealing for a few reasons:\r\n* In a world where HTTP/3 is common, it's more complexity overall.\r\n* \"Legacy CONNECT\" is not currently representable in the Access Description JSON.  We could add it, but ideally I would prefer to define a CONNECT-TCP that is nicely parallel to CONNECT-UDP.\r\n\r\nI've added a brief rationale for this requirement to the text.",
+          "createdAt": "2022-06-27T15:05:58Z",
+          "updatedAt": "2022-06-27T15:05:58Z"
+        },
+        {
+          "author": "martinthomson",
+          "authorAssociation": "NONE",
+          "body": "I disagree with that rationale, but it's your draft.",
+          "createdAt": "2022-06-28T00:16:49Z",
+          "updatedAt": "2022-06-28T00:16:49Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "OWNER",
+          "body": "OK, good to know.  I think that requiring HTTP/3 at the target amounts to less implementation work (and less specification text) than requiring Legacy CONNECT at the proxy, but I'm happy to flip that requirement if the consensus tilts the other way.",
+          "createdAt": "2022-06-28T19:04:58Z",
+          "updatedAt": "2022-06-28T19:04:58Z"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "id": "I_kwDOHIcqgM5Mm7sc",
+      "title": "Proxy needs to support If-Match",
+      "url": "https://github.com/bemasc/access-services/issues/5",
+      "state": "CLOSED",
+      "author": "martinthomson",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "The client is making requests with it, so the proxy should probably be required to read and use it when answering.",
+      "createdAt": "2022-06-27T05:41:34Z",
+      "updatedAt": "2022-06-27T17:15:50Z",
+      "closedAt": "2022-06-27T17:15:50Z",
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "OWNER",
+          "body": "No, this header only appears on tunneled requests.  The client does not set this header on requests to the proxy.\r\n\r\nI've adjusted the client instructions to emphasize this.",
+          "createdAt": "2022-06-27T17:15:50Z",
+          "updatedAt": "2022-06-27T17:15:50Z"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "id": "I_kwDOHIcqgM5Mm8XB",
+      "title": "no-cache requests",
+      "url": "https://github.com/bemasc/access-services/issues/6",
+      "state": "CLOSED",
+      "author": "martinthomson",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "Regarding the deanonymization attack in Section 7.1.2, RFC 8246 says:\r\n\r\n> [...] proxies SHOULD skip conditionally revalidating fresh responses containing the immutable extension unless there is a signal from the client that a validation is necessary (e.g., a no-cache Cache-Control request directive [...]\r\n\r\nThis suggests that the refresh of state is possible if the proxy acts as a typical HTTP intermediary.  Special rules might be needed.",
+      "createdAt": "2022-06-27T05:45:38Z",
+      "updatedAt": "2022-06-27T17:27:20Z",
+      "closedAt": "2022-06-27T17:27:20Z",
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "OWNER",
+          "body": "Good point!  I've added a reference to that text and expanded the text about not revalidating.",
+          "createdAt": "2022-06-27T17:27:20Z",
+          "updatedAt": "2022-06-27T17:27:20Z"
+        }
+      ]
+    }
+  ],
+  "pulls": []
+}
