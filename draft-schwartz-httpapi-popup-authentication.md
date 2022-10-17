@@ -63,7 +63,7 @@ We presume the existence of a desired resource, identified by the "initial URL".
 
 ## Server requirements
 
-If the request requires authentication, the server SHALL return HTTP 401 "Unauthorized" with a "WWW-Authenticate" header field value of "interactive" (registered in {{iana}}). This value MUST contain a "location" parameter whose value is a path (the "authentication path").  The server MAY also include other "WWW-Authenticate" headers indicating other supported authentication schemes.
+If the request requires authentication, the server SHALL return HTTP 401 "Unauthorized" with a "WWW-Authenticate" header whose auth-scheme is "interactive" (registered in {{iana}}). This header field value MUST also contain a parameter named "location" whose value is a URL path (the "authentication path").  The server MAY also include other "WWW-Authenticate" headers indicating other supported authentication schemes.
 
 Any GET request to the authentication path (on the same origin as the initial URL) MUST be subject to the same authentication requirements as the rejected request to the initial URL.  Note: the rejected request may have used a different method, such as POST, that might have different authentication requirements than a GET request to the initial URL.
 
@@ -71,15 +71,17 @@ A GET request to the authentication path that fails authentication MUST return a
 
 ## Client requirements {#client}
 
-If the client receives an HTTP 401 "Unauthorized" error with a "WWW-Authenticate: interactive" header field, it SHOULD notify the user that the initial URL's origin is requesting interactive authentication, including a reminder of the role for which this origin is being used noninteractively.  With the user's approval, it SHOULD load the authentication path from the "location" parameter as a webpage in a browser context.  This context SHOULD have access to the user's credential assistance functions (e.g. password manager) but MAY otherwise be a blank context.
+If the client receives an HTTP 401 "Unauthorized" error with a "WWW-Authenticate" header whose auth-scheme is "interactive", it SHOULD notify the user that the initial URL's origin is requesting interactive authentication, including a reminder of the role for which this origin is being used noninteractively.  With the user's approval, it SHOULD load the authentication path from the "location" parameter as a webpage in a browser context.  This context SHOULD have access to the user's credential assistance functions (e.g. password manager) but MAY otherwise be a blank context.
 
 This browser MUST behave similarly to a normal browser, including support for navigation between origins.  It SHOULD display the current origin to the user, to reduce the risk of impersonation attacks.
 
 The client MUST monitor any requests made by the browser to the authentication path (whether as navigation, subresource, or javascript-initiated fetch).  If any such request succeeds (i.e. receives a 2XX status code), the client MUST (1) store any "Authorization" and "Cookie" headers used in this request and (2) close this browser instance.  The client SHOULD also display a notification that interactive authentication has concluded.
 
-After learning the authorization headers, the client SHOULD retry the failed request, if it is still relevant.  For this and all subsequent requests to the initial URL, the client MUST include the stored "Authorization" and "Cookie" headers.
+After learning the authorization headers, the client SHOULD retry the failed request if it is still relevant.  For this and all subsequent requests to the initial URL, the client MUST add the stored "Authorization" and "Cookie" headers.
 
 If the user closes the browser instance without successfully retrieving the resource at the authentication path, the system SHOULD warn the user that authentication has failed.  The system SHOULD avoid spamming the user with repeated authentication requests, but SHOULD NOT permanently abandon authentication.
+
+Web browsers MUST NOT implement support for the "interactive" auth-scheme in ordinary usage.  This auth-scheme is not meaningful in an interactive context.
 
 ## Use with proxy servers
 
@@ -96,7 +98,7 @@ If the "initial URL" indicates a proxy server, this procedure applies with the f
 
 Suppose that the user has entered an initial URL of "https://corp.example.com/scan" into a settings panel on their system labeled "Executable Security Scanner URL".  Later, when the user is installing a new executable, the system attempts to upload it to the security scanner service:
 
-~~~ http-message
+~~~HTTP
 POST /scan HTTP/1.1
 Host: corp.example.com
 Accept: application/json
@@ -107,7 +109,7 @@ Content-Length: 123456
 
 The security scanner is access-controlled by interactive authentication, so it sends the following reply:
 
-~~~ http-message
+~~~HTTP
 HTTP 401 Unauthorized
 WWW-Authenticate: interactive location=/scanner-login
 ...
@@ -127,7 +129,7 @@ The client displays a notification to the user:
 
 The user approves, and the client loads "https://corp.example.com/scanner-login" in a browser context:
 
-~~~ http-message
+~~~HTTP
 GET /scanner-login HTTP/1.1
 Host: corp.example.com
 Accept: text/html,...
@@ -141,7 +143,7 @@ Sec-Fetch-User: ?1
 
 This request is still unauthorized, so the server replies with HTTP 401 again:
 
-~~~ http-message
+~~~HTTP
 HTTP 401 Unauthorized
 Content-Type: text/html
 ...
@@ -149,7 +151,7 @@ Content-Type: text/html
 
 The content of the HTTP 401 response is a login page.  The user logs in, perhaps via third-party OAuth or using WebAuthn.  Once login is complete, the final step navigates back to the authorization path.  This time, the request includes an additional Cookie header:
 
-~~~ http-message
+~~~HTTP
 GET /scanner-login HTTP/1.1
 Host: corp.example.com
 Accept: text/html,...
@@ -162,7 +164,7 @@ Cookie: login=6bb0e2c8-874e-44c8-b8e0-25e12f339b46
 ...
 ~~~
 
-~~~ http-message
+~~~HTTP
 HTTP 200 OK
 Content-Type: text/html
 ...
@@ -172,8 +174,8 @@ The client detects this response and closes the browser context.  Instead, it di
 
 ~~~
 +---------------------------------+
-| Your interactive login with     |
-| "corp.example.com" is complete. |
+| You have successfully logged in |
+| to "corp.example.com".          |
 |                                 |
 |               OK                |
 +---------------------------------+
@@ -181,7 +183,7 @@ The client detects this response and closes the browser context.  Instead, it di
 
 The client then retries the initial request, with the additional Cookie header:
 
-~~~ http-message
+~~~HTTP
 POST /scan HTTP/1.1
 Host: corp.example.com
 Accept: application/json
@@ -193,7 +195,7 @@ Cookie: login=6bb0e2c8-874e-44c8-b8e0-25e12f339b46
 
 The server accepts the cookie as authorization and replies with its scan results:
 
-~~~ http-message
+~~~HTTP
 HTTP 200 OK
 Content-Type: application/json
 ...
@@ -207,6 +209,8 @@ This specification grants noninteractive HTTP origins the ability to become inte
 One important concern is "domain impersonation", in which the initial URL's origin poses as a different origin, in order to trick the user into revealing their password or taking some other harmful action.  This is mitigated by displaying the current origin's hostname to the user in the browser context (as normally done by browsers and recommended in {{client}}).
 
 Another concern is related to "clickjacking" attacks, in which a hostile origin causes a user to interact with the wrong user interface.  For example, if the hostile origin places an "OK" button at the expected location of a system security setting, the origin might be able to close the browser window just before the user clicks, causing them to change the security setting instead.  Clickjacking is prevented by the interstitial notifications when entering and exiting interactive mode (recommended in {{client}}).
+
+Web browsers also offer an expanded attack surface related to software vulnerabilities.  If the "initial URL" has significant potential to be malicious, and an up-to-date web browser is not available, this specification may not be appropriate to implement.
 
 # Privacy Considerations
 
