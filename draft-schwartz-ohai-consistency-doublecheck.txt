@@ -4,8 +4,8 @@
 
 ohai                                                      B. M. Schwartz
 Internet-Draft                                                Google LLC
-Intended status: Standards Track                             1 July 2022
-Expires: 2 January 2023
+Intended status: Standards Track                         17 October 2022
+Expires: 20 April 2023
 
 
          Key Consistency for Oblivious HTTP by Double-Checking
@@ -44,7 +44,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 2 January 2023.
+   This Internet-Draft will expire on 20 April 2023.
 
 Copyright Notice
 
@@ -550,9 +550,9 @@ Table of Contents
 
    [I-D.ietf-ohai-ohttp]
               Thomson, M. and C. A. Wood, "Oblivious HTTP", Work in
-              Progress, Internet-Draft, draft-ietf-ohai-ohttp-01, 15
-              February 2022, <https://datatracker.ietf.org/doc/html/
-              draft-ietf-ohai-ohttp-01>.
+              Progress, Internet-Draft, draft-ietf-ohai-ohttp-05, 26
+              September 2022, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-ohai-ohttp-05>.
 
    [I-D.schwartz-masque-access-descriptions]
               Schwartz, B. M., "HTTP Access Service Description
@@ -601,16 +601,16 @@ Table of Contents
    [I-D.wood-key-consistency]
               Davidson, A., Finkel, M., Thomson, M., and C. A. Wood,
               "Key Consistency and Discovery", Work in Progress,
-              Internet-Draft, draft-wood-key-consistency-02, 4 March
+              Internet-Draft, draft-wood-key-consistency-03, 17 August
               2022, <https://datatracker.ietf.org/doc/html/draft-wood-
-              key-consistency-02>.
+              key-consistency-03>.
 
-   [SVCB]     Schwartz, B., Bishop, M., and E. Nygren, "Service binding
-              and parameter specification via the DNS (DNS SVCB and
-              HTTPS RRs)", Work in Progress, Internet-Draft, draft-ietf-
-              dnsop-svcb-https-10, 24 May 2022,
+   [SVCB]     Schwartz, B. M., Bishop, M., and E. Nygren, "Service
+              binding and parameter specification via the DNS (DNS SVCB
+              and HTTPS RRs)", Work in Progress, Internet-Draft, draft-
+              ietf-dnsop-svcb-https-11, 11 October 2022,
               <https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-
-              svcb-https-10>.
+              svcb-https-11>.
 
 Acknowledgments
 

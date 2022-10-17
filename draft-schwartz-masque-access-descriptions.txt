@@ -4,8 +4,8 @@
 
 Multiplexed Application Substrate over QUIC Encryption    B. M. Schwartz
 Internet-Draft                                                Google LLC
-Intended status: Standards Track                             1 July 2022
-Expires: 2 January 2023
+Intended status: Standards Track                         17 October 2022
+Expires: 20 April 2023
 
 
                 HTTP Access Service Description Objects
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 2 January 2023.
+   This Internet-Draft will expire on 20 April 2023.
 
 Copyright Notice
 
@@ -241,12 +241,12 @@ Table of Contents
 7.  Normative References
 
    [I-D.draft-ietf-masque-connect-ip]
-              Pauly, T., Schinazi, D., Chernyakhovsky, A., Kuehlewind,
+              Pauly, T., Schinazi, D., Chernyakhovsky, A., Kühlewind,
               M., and M. Westerlund, "IP Proxying Support for HTTP",
               Work in Progress, Internet-Draft, draft-ietf-masque-
-              connect-ip-01, 4 March 2022,
+              connect-ip-03, 27 September 2022,
               <https://datatracker.ietf.org/doc/html/draft-ietf-masque-
-              connect-ip-01>.
+              connect-ip-03>.
 
    [I-D.draft-ietf-masque-connect-udp]
               Schinazi, D., "Proxying UDP in HTTP", Work in Progress,
@@ -256,9 +256,9 @@ Table of Contents
 
    [I-D.draft-ietf-ohai-ohttp]
               Thomson, M. and C. A. Wood, "Oblivious HTTP", Work in
-              Progress, Internet-Draft, draft-ietf-ohai-ohttp-01, 15
-              February 2022, <https://datatracker.ietf.org/doc/html/
-              draft-ietf-ohai-ohttp-01>.
+              Progress, Internet-Draft, draft-ietf-ohai-ohttp-05, 26
+              September 2022, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-ohai-ohttp-05>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
