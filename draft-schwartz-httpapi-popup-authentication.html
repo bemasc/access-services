@@ -1307,7 +1307,7 @@ Content-Length: 123456
 <p id="section-5-3">The security scanner is access-controlled by interactive authentication, so it sends the following reply:<a href="#section-5-3" class="pilcrow">¶</a></p>
 <div id="section-5-4">
 <pre class="lang-HTTP sourcecode">
-HTTP 401 Unauthorized
+HTTP/1.1 401 Unauthorized
 WWW-Authenticate: interactive location=/scanner-login
 ...
 </pre><a href="#section-5-4" class="pilcrow">¶</a>
@@ -1341,7 +1341,7 @@ Sec-Fetch-User: ?1
 <p id="section-5-9">This request is still unauthorized, so the server replies with HTTP 401 again:<a href="#section-5-9" class="pilcrow">¶</a></p>
 <div id="section-5-10">
 <pre class="lang-HTTP sourcecode">
-HTTP 401 Unauthorized
+HTTP/1.1 401 Unauthorized
 Content-Type: text/html
 ...
 </pre><a href="#section-5-10" class="pilcrow">¶</a>
@@ -1363,7 +1363,7 @@ Cookie: login=6bb0e2c8-874e-44c8-b8e0-25e12f339b46
 </div>
 <div id="section-5-13">
 <pre class="lang-HTTP sourcecode">
-HTTP 200 OK
+HTTP/1.1 200 OK
 Content-Type: text/html
 ...
 </pre><a href="#section-5-13" class="pilcrow">¶</a>
@@ -1394,7 +1394,7 @@ Cookie: login=6bb0e2c8-874e-44c8-b8e0-25e12f339b46
 <p id="section-5-18">The server accepts the cookie as authorization and replies with its scan results:<a href="#section-5-18" class="pilcrow">¶</a></p>
 <div id="section-5-19">
 <pre class="lang-HTTP sourcecode">
-HTTP 200 OK
+HTTP/1.1 200 OK
 Content-Type: application/json
 ...
 {"scan_result": "safe"}

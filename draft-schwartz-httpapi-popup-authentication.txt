@@ -276,7 +276,7 @@ Table of Contents
    The security scanner is access-controlled by interactive
    authentication, so it sends the following reply:
 
-   HTTP 401 Unauthorized
+   HTTP/1.1 401 Unauthorized
    WWW-Authenticate: interactive location=/scanner-login
    ...
 
@@ -306,7 +306,7 @@ Table of Contents
    This request is still unauthorized, so the server replies with HTTP
    401 again:
 
-   HTTP 401 Unauthorized
+   HTTP/1.1 401 Unauthorized
    Content-Type: text/html
    ...
 
@@ -326,7 +326,7 @@ Table of Contents
    Cookie: login=6bb0e2c8-874e-44c8-b8e0-25e12f339b46
    ...
 
-   HTTP 200 OK
+   HTTP/1.1 200 OK
    Content-Type: text/html
    ...
 
@@ -354,7 +354,7 @@ Table of Contents
    The server accepts the cookie as authorization and replies with its
    scan results:
 
-   HTTP 200 OK
+   HTTP/1.1 200 OK
    Content-Type: application/json
    ...
    {"scan_result": "safe"}
