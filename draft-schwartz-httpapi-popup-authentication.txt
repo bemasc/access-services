@@ -177,11 +177,12 @@ Table of Contents
 4.1.  Server requirements
 
    If the request requires authentication, the server SHALL return HTTP
-   401 "Unauthorized" with a "WWW-Authenticate" header field value of
-   "interactive" (registered in Section 8).  This value MUST contain a
-   "location" parameter whose value is a path (the "authentication
-   path").  The server MAY also include other "WWW-Authenticate" headers
-   indicating other supported authentication schemes.
+   401 "Unauthorized" with a "WWW-Authenticate" header whose auth-scheme
+   is "interactive" (registered in Section 8).  This header field value
+   MUST also contain a parameter named "location" whose value is a URL
+   path (the "authentication path").  The server MAY also include other
+   "WWW-Authenticate" headers indicating other supported authentication
+   schemes.
 
    Any GET request to the authentication path (on the same origin as the
    initial URL) MUST be subject to the same authentication requirements
@@ -200,14 +201,14 @@ Table of Contents
 4.2.  Client requirements
 
    If the client receives an HTTP 401 "Unauthorized" error with a "WWW-
-   Authenticate: interactive" header field, it SHOULD notify the user
-   that the initial URL's origin is requesting interactive
-   authentication, including a reminder of the role for which this
-   origin is being used noninteractively.  With the user's approval, it
-   SHOULD load the authentication path from the "location" parameter as
-   a webpage in a browser context.  This context SHOULD have access to
-   the user's credential assistance functions (e.g. password manager)
-   but MAY otherwise be a blank context.
+   Authenticate" header whose auth-scheme is "interactive", it SHOULD
+   notify the user that the initial URL's origin is requesting
+   interactive authentication, including a reminder of the role for
+   which this origin is being used noninteractively.  With the user's
+   approval, it SHOULD load the authentication path from the "location"
+   parameter as a webpage in a browser context.  This context SHOULD
+   have access to the user's credential assistance functions (e.g.
+   password manager) but MAY otherwise be a blank context.
 
    This browser MUST behave similarly to a normal browser, including
    support for navigation between origins.  It SHOULD display the
@@ -223,8 +224,8 @@ Table of Contents
    notification that interactive authentication has concluded.
 
    After learning the authorization headers, the client SHOULD retry the
-   failed request, if it is still relevant.  For this and all subsequent
-   requests to the initial URL, the client MUST include the stored
+   failed request if it is still relevant.  For this and all subsequent
+   requests to the initial URL, the client MUST add the stored
    "Authorization" and "Cookie" headers.
 
    If the user closes the browser instance without successfully
@@ -232,6 +233,10 @@ Table of Contents
    warn the user that authentication has failed.  The system SHOULD
    avoid spamming the user with repeated authentication requests, but
    SHOULD NOT permanently abandon authentication.
+
+   Web browsers MUST NOT implement support for the "interactive" auth-
+   scheme in ordinary usage.  This auth-scheme is not meaningful in an
+   interactive context.
 
 4.3.  Use with proxy servers
 
@@ -329,8 +334,8 @@ Table of Contents
    Instead, it displays a notification:
 
    +---------------------------------+
-   | Your interactive login with     |
-   | "corp.example.com" is complete. |
+   | You have successfully logged in |
+   | to "corp.example.com".          |
    |                                 |
    |               OK                |
    +---------------------------------+
@@ -375,6 +380,11 @@ Table of Contents
    clicks, causing them to change the security setting instead.
    Clickjacking is prevented by the interstitial notifications when
    entering and exiting interactive mode (recommended in Section 4.2).
+
+   Web browsers also offer an expanded attack surface related to
+   software vulnerabilities.  If the "initial URL" has significant
+   potential to be malicious, and an up-to-date web browser is not
+   available, this specification may not be appropriate to implement.
 
 7.  Privacy Considerations
 
