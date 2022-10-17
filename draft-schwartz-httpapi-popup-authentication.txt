@@ -357,6 +357,7 @@ Table of Contents
    HTTP/1.1 200 OK
    Content-Type: application/json
    ...
+
    {"scan_result": "safe"}
 
 6.  Security Considerations
