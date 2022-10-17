@@ -14,3 +14,4 @@ draft-schwartz-masque-access-descriptions.xml
 lib
 report.xml
 venv/
+.vscode/
