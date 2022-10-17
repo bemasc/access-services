@@ -199,6 +199,7 @@ The server accepts the cookie as authorization and replies with its scan results
 HTTP/1.1 200 OK
 Content-Type: application/json
 ...
+
 {"scan_result": "safe"}
 ~~~
 
