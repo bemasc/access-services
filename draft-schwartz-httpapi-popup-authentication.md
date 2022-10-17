@@ -110,7 +110,7 @@ Content-Length: 123456
 The security scanner is access-controlled by interactive authentication, so it sends the following reply:
 
 ~~~HTTP
-HTTP 401 Unauthorized
+HTTP/1.1 401 Unauthorized
 WWW-Authenticate: interactive location=/scanner-login
 ...
 ~~~
@@ -144,7 +144,7 @@ Sec-Fetch-User: ?1
 This request is still unauthorized, so the server replies with HTTP 401 again:
 
 ~~~HTTP
-HTTP 401 Unauthorized
+HTTP/1.1 401 Unauthorized
 Content-Type: text/html
 ...
 ~~~
@@ -165,7 +165,7 @@ Cookie: login=6bb0e2c8-874e-44c8-b8e0-25e12f339b46
 ~~~
 
 ~~~HTTP
-HTTP 200 OK
+HTTP/1.1 200 OK
 Content-Type: text/html
 ...
 ~~~
@@ -196,7 +196,7 @@ Cookie: login=6bb0e2c8-874e-44c8-b8e0-25e12f339b46
 The server accepts the cookie as authorization and replies with its scan results:
 
 ~~~HTTP
-HTTP 200 OK
+HTTP/1.1 200 OK
 Content-Type: application/json
 ...
 {"scan_result": "safe"}
