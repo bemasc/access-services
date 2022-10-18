@@ -4,8 +4,8 @@
 
 ohai                                                      B. M. Schwartz
 Internet-Draft                                                Google LLC
-Intended status: Standards Track                         17 October 2022
-Expires: 20 April 2023
+Intended status: Standards Track                         18 October 2022
+Expires: 21 April 2023
 
 
          Key Consistency for Oblivious HTTP by Double-Checking
@@ -44,7 +44,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 20 April 2023.
+   This Internet-Draft will expire on 21 April 2023.
 
 Copyright Notice
 
