@@ -54,8 +54,6 @@ The initially defined keys are "http", tcp", "dns", "udp", and "ip".  Each of th
 
 If the Access Description is for a general-purpose proxy, all proxy targets are presumed to be supported.  Otherwise, the supported targets must be understood from context.
 
-## Examples
-
 ~~~JSON
 {
   "http": {
@@ -77,7 +75,7 @@ If the Access Description is for a general-purpose proxy, all proxy targets are 
   }
 }
 ~~~
-{: title="A proxy with many supported services"}
+{: title="An example proxy with many supported services"}
 
 # Client Authentication
 
