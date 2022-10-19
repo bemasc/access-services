@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta content="Common,Latin" name="scripts">
 <meta content="initial-scale=1.0" name="viewport">
-<title>Key Consistency for Oblivious HTTP by Double-Checking</title>
+<title>Key Consistency by Double-Checking via a Semi-Trusted Proxy</title>
 <meta content="Benjamin M. Schwartz" name="author">
 <meta content="
-       The assurances provided by Oblivious HTTP depend on the client's ability to verify that it is using the same Gateway, Target, and KeyConfig as many other users.  This specification defines a protocol to enable this verification. 
+       Several recent IETF privacy protocols require clients to acquire bootstrap information for a service in a way that guarantees both authenticity and consistency, e.g., encrypting to the same key as many other users.  This specification defines a procedure for transferring arbitrary HTTP resources in a manner that provides these guarantees.  The procedure relies on access to a semi-trusted HTTP proxy, under the same security assumptions as an Oblivious HTTP Relay. 
     " name="description">
 <meta content="xml2rfc 3.15.1" name="generator">
 <meta content="Internet-Draft" name="keyword">
@@ -1039,7 +1039,7 @@ svg :is([stroke="fill"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Schwartz</td>
-<td class="center">Expires 21 April 2023</td>
+<td class="center">Expires 22 April 2023</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1052,12 +1052,12 @@ svg :is([stroke="fill"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-schwartz-ohai-consistency-doublecheck-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2022-10-18" class="published">18 October 2022</time>
+<time datetime="2022-10-19" class="published">19 October 2022</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2023-04-21">21 April 2023</time></dd>
+<dd class="expires"><time datetime="2023-04-22">22 April 2023</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1067,10 +1067,10 @@ svg :is([stroke="fill"], [fill^="#fff"]) {
 </dd>
 </dl>
 </div>
-<h1 id="title">Key Consistency for Oblivious HTTP by Double-Checking</h1>
+<h1 id="title">Key Consistency by Double-Checking via a Semi-Trusted Proxy</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">The assurances provided by Oblivious HTTP depend on the client's ability to verify that it is using the same Gateway, Target, and KeyConfig as many other users.  This specification defines a protocol to enable this verification.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">Several recent IETF privacy protocols require clients to acquire bootstrap information for a service in a way that guarantees both authenticity and consistency, e.g., encrypting to the same key as many other users.  This specification defines a procedure for transferring arbitrary HTTP resources in a manner that provides these guarantees.  The procedure relies on access to a semi-trusted HTTP proxy, under the same security assumptions as an Oblivious HTTP Relay.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-about-this-document">
@@ -1101,7 +1101,7 @@ svg :is([stroke="fill"], [fill^="#fff"]) {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 21 April 2023.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 22 April 2023.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1143,13 +1143,16 @@ svg :is([stroke="fill"], [fill^="#fff"]) {
             <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-requirements" class="internal xref">Requirements</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
-                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-oblivious-service" class="internal xref">Oblivious Service</a></p>
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-origin" class="internal xref">Origin</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
-                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-oblivious-relay" class="internal xref">Oblivious Relay</a></p>
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-proxy" class="internal xref">Proxy</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
                 <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-client" class="internal xref">Client</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-negative-responses" class="internal xref">Negative responses</a></p>
 </li>
             </ul>
 </li>
@@ -1174,13 +1177,16 @@ svg :is([stroke="fill"], [fill^="#fff"]) {
                 <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-in-scope" class="internal xref">In scope</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.1">
-                    <p id="section-toc.1-1.7.2.1.2.1.1"><a href="#section-7.1.1" class="auto internal xref">7.1.1</a>.  <a href="#name-forgery" class="internal xref">Forgery</a></p>
+                    <p id="section-toc.1-1.7.2.1.2.1.1"><a href="#section-7.1.1" class="auto internal xref">7.1.1</a>.  <a href="#name-authenticity" class="internal xref">Authenticity</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.2">
-                    <p id="section-toc.1-1.7.2.1.2.2.1"><a href="#section-7.1.2" class="auto internal xref">7.1.2</a>.  <a href="#name-deanonymization" class="internal xref">Deanonymization</a></p>
+                    <p id="section-toc.1-1.7.2.1.2.2.1"><a href="#section-7.1.2" class="auto internal xref">7.1.2</a>.  <a href="#name-consistency" class="internal xref">Consistency</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.3">
-                    <p id="section-toc.1-1.7.2.1.2.3.1"><a href="#section-7.1.3" class="auto internal xref">7.1.3</a>.  <a href="#name-abusive-traffic" class="internal xref">Abusive traffic</a></p>
+                    <p id="section-toc.1-1.7.2.1.2.3.1"><a href="#section-7.1.3" class="auto internal xref">7.1.3</a>.  <a href="#name-temporal-correlation-attack" class="internal xref">Temporal Correlation Attacks</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.4">
+                    <p id="section-toc.1-1.7.2.1.2.4.1"><a href="#section-7.1.4" class="auto internal xref">7.1.4</a>.  <a href="#name-abusive-traffic" class="internal xref">Abusive traffic</a></p>
 </li>
                 </ul>
 </li>
@@ -1218,24 +1224,34 @@ svg :is([stroke="fill"], [fill^="#fff"]) {
       <h2 id="name-introduction">
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
-<p id="section-1-1">Oblivious HTTP <span>[<a href="#I-D.ietf-ohai-ohttp" class="cite xref">I-D.ietf-ohai-ohttp</a>]</span> identifies four parties to each exchange: the Client, Relay, Gateway and Target.  When used properly, Oblivious HTTP enables the Client to send requests to the Target in such a way that the Target and Gateway cannot tell whether two requests came from the same Client, and the Relay cannot see the contents of the requests.<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">The Target and Gateway are tightly coupled, as the Gateway can see and modify all cleartext data to and from the Target.  For ease of description, we will refer to the Target and Gateway collectively (including the URI and KeyConfig for the Gateway and the URI of the Target) as the "Service".<a href="#section-1-2" class="pilcrow">¶</a></p>
-<p id="section-1-3">Oblivious HTTP's threat model assumes that at least one of the Relay and the Service is acting properly, i.e. complying with the protocol and keeping certain information confidential.  If either Relay or Service misbehaves, the only effect must be a denial of service.<a href="#section-1-3" class="pilcrow">¶</a></p>
-<p id="section-1-4">In order for these security guarantees to hold, several preconditions must be met:<a href="#section-1-4" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-1-5">
-<li id="section-1-5.1">The Client must be one of many users who might be using the Relay.  Otherwise, use of the Relay reveals the user's identity to the Gateway.<a href="#section-1-5.1" class="pilcrow">¶</a>
+<p id="section-1-1">Oblivious HTTP <span>[<a href="#I-D.ietf-ohai-ohttp" class="cite xref">I-D.ietf-ohai-ohttp</a>]</span> enables an HTTP client to send requests to a target in such a way that no single party can determine both the identity of the client and the contents of its request.  Oblivious HTTP identifies four parties to each exchange: the Client, Relay, Gateway and Target.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">In order for Oblivious HTTP's privacy guarantees to hold, several preconditions must be met:<a href="#section-1-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-1-3">
+<li id="section-1-3.1">The Client must be one of many users who might be using the Relay.  Otherwise, use of the Relay reveals the user's identity to the Gateway.<a href="#section-1-3.1" class="pilcrow">¶</a>
 </li>
-        <li id="section-1-5.2">The Client must hold an authentic KeyConfig for the Gateway.  Otherwise, the Client could be speaking to the Relay, impersonating the Gateway.<a href="#section-1-5.2" class="pilcrow">¶</a>
+        <li id="section-1-3.2">The Client must hold an authentic KeyConfig for the Gateway.  Otherwise, the Client could be speaking to the Relay, impersonating the Gateway.<a href="#section-1-3.2" class="pilcrow">¶</a>
 </li>
-        <li id="section-1-5.3">All users of the Relay must be equally likely to use this Service, regardless of their prior activity.  Otherwise, the encrypted request identifies the Client to the Service.<a href="#section-1-5.3" class="pilcrow">¶</a>
+        <li id="section-1-3.3">All users of the Relay must be equally likely to use this Gateway, KeyConfig, and Target, regardless of their prior activity.  Otherwise, the encrypted request identifies the Client to the Gateway.<a href="#section-1-3.3" class="pilcrow">¶</a>
 </li>
-        <li id="section-1-5.4">(optional) The Gateway must not learn the IP addresses of the Clients, collectively.  Otherwise, the Gateway might be able to deanonymize requests by correlating them with external information about the Clients.<a href="#section-1-5.4" class="pilcrow">¶</a>
+        <li id="section-1-3.4">(optional) The Gateway should not learn the IP addresses of the Clients, collectively.  Otherwise, the Gateway might be able to deanonymize requests by correlating them with external information about the Clients.<a href="#section-1-3.4" class="pilcrow">¶</a>
 </li>
       </ol>
-<p id="section-1-6">This specification defines behaviors for the Client, Relay, and Service that achieve preconditions 2-4.  (This specification does not address precondition 1.)<a href="#section-1-6" class="pilcrow">¶</a></p>
-<p id="section-1-7">This specification assumes that the Service is identified by an Access Description <span>[<a href="#I-D.schwartz-masque-access-descriptions" class="cite xref">I-D.schwartz-masque-access-descriptions</a>]</span>, which we call the "Service Description".  For this specification to meet its goals, the Service Description's URL must have been distributed to clients in a globally consistent fashion.  For example, the Service Description URL might be the default value of a software setting, or it might be published on a third party's website.  This specification allows clients to convert the static, long-lived Service Description URL into a fresh Service Description without losing the privacy guarantees of Oblivious HTTP.<a href="#section-1-7" class="pilcrow">¶</a></p>
-<p id="section-1-8">In principle, Services could achieve a similar effect by distributing their Service Descriptions directly through this globally consistent channel.  However, these ad hoc pubication channels may not be fast enough to support frequent updates (e.g., key rotations), especially if updates require user intervention.<a href="#section-1-8" class="pilcrow">¶</a></p>
-<p id="section-1-9">This draft combines elements of the "Direct Discovery", "Single Proxy Discovery", and "Independent Verification" strategies defined in <span>[<a href="#I-D.wood-key-consistency" class="cite xref">I-D.wood-key-consistency</a>]</span>.<a href="#section-1-9" class="pilcrow">¶</a></p>
+<p id="section-1-4">The Privacy Pass protocol <span>[<a href="#I-D.ietf-privacypass-protocol" class="cite xref">I-D.ietf-privacypass-protocol</a>]</span> allows a Client to retrieve tokens from an Issuer, and present them to an Origin, in such a way that the Origin can verify the validity of the tokens but cannot identify the Client, even if it colludes with the Issuer.  Privacy Pass requires a similar set of preconditions for its privacy guarantees:<a href="#section-1-4" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-1-5">
+<li id="section-1-5.1">The Client's transport to the Origin must not reveal the client's identity (e.g. via the client IP address).<a href="#section-1-5.1" class="pilcrow">¶</a>
+</li>
+        <li id="section-1-5.2">The Client must hold an authentic Issuer Directory Object.  Otherwise, issuance will fail (resulting in a denial of service, not a privacy violation).<a href="#section-1-5.2" class="pilcrow">¶</a>
+</li>
+        <li id="section-1-5.3">All Clients with the same transport metadata must be using the same Issuer Directory Object for this Issuer.  Otherwise, these factors together uniquely identify the client.<a href="#section-1-5.3" class="pilcrow">¶</a>
+</li>
+        <li id="section-1-5.4">(optional) The Origin should not learn the IP addresses of the Clients collectively, as above.<a href="#section-1-5.4" class="pilcrow">¶</a>
+</li>
+      </ol>
+<p id="section-1-6">Pre-requisite 1 on this list can be achieved by employing a shared transport proxy, on the assumption that at least one of the proxy or the Origin is non-malicious.  (This is the same assumption that an Oblivious HTTP Client makes about its Relay).<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">This specification assumes that a shared, "semi-trusted" proxy is available (fulfilling precondition 1 on each list).  It defines a three-party protocol for a Client, Proxy, and Origin to fetch an HTTP resource in a manner that ensures authenticity and consistency among Clients of a single Proxy.  When used to initialize Oblivious HTTP or Privacy Pass, it guarantees preconditions 2, 3, and optionally 4.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<p id="section-1-8">The input to this protocol is a Desired Resource URI: an "https" URI on the Origin that is assumed to have been distributed to Clients in a globally consistent fashion.  For example, this URI might be the default value of a software setting, or it might be published on a third party's website.  This specification allows Clients to convert the static, long-lived Desired Resource URI into a fresh copy of that resource, i.e. to fetch the resource.<a href="#section-1-8" class="pilcrow">¶</a></p>
+<p id="section-1-9">In principle, the Desired Resource could have been distributed directly through the assumed globally consistent channel.  However, these ad hoc publication channels may not be fast enough to support frequent updates (e.g., key rotations), especially if updates require user intervention.<a href="#section-1-9" class="pilcrow">¶</a></p>
+<p id="section-1-10">This draft is an instantiation of the Shared Proxy with Key Confirmation strategy defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-wood-key-consistency-03#section-4.3" class="relref">Section 4.3</a> of [<a href="#I-D.wood-key-consistency" class="cite xref">I-D.wood-key-consistency</a>]</span>.<a href="#section-1-10" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="conventions-and-definitions">
@@ -1254,21 +1270,21 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
       <h2 id="name-overview">
 <a href="#section-3" class="section-number selfRef">3. </a><a href="#name-overview" class="section-name selfRef">Overview</a>
       </h2>
-<p id="section-3-1">In the Key Consistency Double-Check procedure, the Client emits two HTTP GET requests: one to the Relay, and one through the Relay to the Service Description Host using CONNECT-UDP.  (The Service Description Host, Gateway, and Target are most commonly expected to be a single origin.)  The Relay will forward the first request to the Service Description Host if the response is not in cache.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-1">In the Key Consistency Double-Check procedure, the Client emits two HTTP GET requests for the Desired Resource.  One uses the Proxy as an HTTP request proxy (terminating TLS and HTTP), and the other optionally uses it as a transport proxy (using TLS end-to-end with the Origin).  The Proxy will forward the first request to the Origin only if the response is not in cache.<a href="#section-3-1" class="pilcrow">¶</a></p>
 <span id="name-overview-of-key-consistency"></span><figure id="figure-1">
         <div class="alignLeft art-text artwork" id="section-3-2.1">
 <pre>
-          +--------+       +-------+       +-------------+
-          |        |&lt;=====&gt;|       |&lt;-----&gt;|   Service   |
-          | Client |       | Relay |       | Description |
-          |        |&lt;=====================&gt;|    Host     |
-          +--------+       +-------+       +-------------+
+          +--------+       +-------+       +--------+
+          |        |&lt;=====&gt;|       |&lt;-----&gt;|        |
+          | Client |       | Proxy |       | Origin |
+          |        |&lt;=====================&gt;|        |
+          +--------+       +-------+       +--------+
 </pre>
 </div>
 <figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
 <a href="#name-overview-of-key-consistency" class="selfRef">Overview of Key-Consistency Double-Check</a>
         </figcaption></figure>
-<p id="section-3-3">The Relay caches the response, ensuring that all clients share it during its freshness lifetime.  The client checks this against the authenticated response from the Service Description Host, preventing forgeries.<a href="#section-3-3" class="pilcrow">¶</a></p>
+<p id="section-3-3">The Proxy caches the response, ensuring that all clients share it during its freshness lifetime.  The client checks this against the authenticated response from the Origin, preventing forgeries.<a href="#section-3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="requirements">
@@ -1276,68 +1292,56 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
       <h2 id="name-requirements">
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-requirements" class="section-name selfRef">Requirements</a>
       </h2>
-<div id="oblivious-service">
+<div id="origin">
 <section id="section-4.1">
-        <h3 id="name-oblivious-service">
-<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-oblivious-service" class="section-name selfRef">Oblivious Service</a>
+        <h3 id="name-origin">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-origin" class="section-name selfRef">Origin</a>
         </h3>
-<p id="section-4.1-1">The Oblivious Service <span class="bcp14">MUST</span> publish an Access Description <span>[<a href="#I-D.schwartz-masque-access-descriptions" class="cite xref">I-D.schwartz-masque-access-descriptions</a>]</span> containing the "ohttp.gateway" key, e.g.:<a href="#section-4.1-1" class="pilcrow">¶</a></p>
-<div id="section-4.1-2">
-<pre class="lang-JSON sourcecode">
-{
-  "ohttp": {
-    "gateway": {
-      "uri": "https://example.com/ohttp/",
-      "key": "(KeyConfig in Base64)"
-    }
-  }
-}
-</pre><a href="#section-4.1-2" class="pilcrow">¶</a>
-</div>
-<p id="section-4.1-3">This Access Description is called the Service Description, and its origin is called the Service Description Host.  This origin <span class="bcp14">MUST</span> support HTTP/3 <span>[<a href="#RFC9114" class="cite xref">RFC9114</a>]</span>, so that it can be accessed via the proxy's CONNECT-UDP service (see <a href="#relay" class="auto internal xref">Section 4.2</a>).<a href="#section-4.1-3" class="pilcrow">¶</a></p>
-<p id="section-4.1-4">The Service Description Host <span class="bcp14">MUST</span> include a "strong validator" ETag (<span><a href="https://rfc-editor.org/rfc/rfc7232#section-2" class="relref">Section 2</a> of [<a href="#RFC7232" class="cite xref">RFC7232</a>]</span>) in any response to a GET request for this Service Description, and <span class="bcp14">MUST</span> support the "If-Match" HTTP request header (<span><a href="https://rfc-editor.org/rfc/rfc7232#section-3" class="relref">Section 3</a> of [<a href="#RFC7232" class="cite xref">RFC7232</a>]</span>).  The response <span class="bcp14">MUST</span> indicate "Cache-Control: public, no-transform, s-maxage=(...), immutable" <span>[<a href="#RFC9111" class="cite xref">RFC9111</a>]</span><span>[<a href="#RFC8246" class="cite xref">RFC8246</a>]</span>.  For efficiency reasons, the max age <span class="bcp14">SHOULD</span> be at least 60 seconds, and preferably much longer.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
-<p id="section-4.1-5">If the Service Description changes, and the resource receives a request whose "If-Match" header identifies a previously served version that has not yet expired, it <span class="bcp14">MUST</span> return a success response containing the previous version.  This response <span class="bcp14">MAY</span> indicate "Cache-Control: private".<a href="#section-4.1-5" class="pilcrow">¶</a></p>
+<p id="section-4.1-1">The Desired Resource <span class="bcp14">MUST</span> include a "strong validator" ETag (<span><a href="https://rfc-editor.org/rfc/rfc7232#section-2" class="relref">Section 2</a> of [<a href="#RFC7232" class="cite xref">RFC7232</a>]</span>) in any response to a GET request, and <span class="bcp14">MUST</span> support the "If-Match" HTTP request header (<span><a href="https://rfc-editor.org/rfc/rfc7232#section-3" class="relref">Section 3</a> of [<a href="#RFC7232" class="cite xref">RFC7232</a>]</span>).  The response <span class="bcp14">MUST</span> indicate "Cache-Control: public, no-transform, s-maxage=(...), immutable" <span>[<a href="#RFC9111" class="cite xref">RFC9111</a>]</span><span>[<a href="#RFC8246" class="cite xref">RFC8246</a>]</span>.  For efficiency reasons, the max age <span class="bcp14">SHOULD</span> be at least 60 seconds, and preferably much longer.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">If the Desired Resource changes, and the Origin receives a request for the resource whose "If-Match" header identifies a previously served version that has not yet expired, it <span class="bcp14">MUST</span> return a success response containing the previous version.  This response <span class="bcp14">MAY</span> indicate "Cache-Control: private".<a href="#section-4.1-2" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="relay">
+<div id="proxy">
 <section id="section-4.2">
-        <h3 id="name-oblivious-relay">
-<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-oblivious-relay" class="section-name selfRef">Oblivious Relay</a>
+        <h3 id="name-proxy">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-proxy" class="section-name selfRef">Proxy</a>
         </h3>
-<p id="section-4.2-1">The Oblivious Relay <span class="bcp14">MUST</span> also provide CONNECT-UDP service <span>[<a href="#I-D.ietf-masque-connect-udp" class="cite xref">I-D.ietf-masque-connect-udp</a>]</span>, and <span class="bcp14">SHOULD</span> also offer DNS over HTTPS <span>[<a href="#RFC8484" class="cite xref">RFC8484</a>]</span>, to enable the use of HTTPS records <span>[<a href="#SVCB" class="cite xref">SVCB</a>]</span> with CONNECT-UDP.  This corresponds to an Access Description that includes the "ohttp.relay", "udp", and "dns" keys:<a href="#section-4.2-1" class="pilcrow">¶</a></p>
-<span id="name-example-relay-access-servic"></span><figure id="figure-2">
+<p id="section-4.2-1">The Proxy <span class="bcp14">MUST</span> offer HTTP request proxy capability, and <span class="bcp14">SHOULD</span> also offer TCP proxy, UDP proxy, and encrypted DNS resolution capabilities.  (An associated encrypted DNS resolver enables reliable use of HTTPS records <span>[<a href="#SVCB" class="cite xref">SVCB</a>]</span>, improves metadata confidentiality, and allows EDNS Client Subnet to be disabled reliably.)  For example, a proxy in the recommended configuration could be described by the following Access Service Description <span>[<a href="#I-D.schwartz-masque-access-descriptions" class="cite xref">I-D.schwartz-masque-access-descriptions</a>]</span>:<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<span id="name-example-proxy-access-servic"></span><figure id="figure-2">
           <div id="section-4.2-2.1">
 <pre class="lang-JSON sourcecode">
 {
-  "dns": {
-    "template": "https://doh.example.com/dns-query{?dns}",
+  "http": {
+    "template": "https://relay.example.org/http{?target_uri}"
+  },
+  "tcp": {
+    "template":
+        "https://proxy.example.org/tcp{?target_host,tcp_port}"
   },
   "udp": {
     "template":
         "https://proxy.example.org/masque{?target_host,target_port}"
   },
-  "ohttp": {
-    "relay": {
-      "template": "https://relay.example.org/ohttp{?request_uri}"
-    }
+  "dns": {
+    "template": "https://doh.example.com/dns-query{?dns}",
   }
 }
 </pre>
 </div>
 <figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
-<a href="#name-example-relay-access-servic" class="selfRef">Example Relay Access Service Description</a>
+<a href="#name-example-proxy-access-servic" class="selfRef">Example Proxy Access Service Description</a>
           </figcaption></figure>
-<p id="section-4.2-3">The Oblivious Relay <span class="bcp14">MUST</span> allow use of the GET method to retrieve small JSON responses, and <span class="bcp14">SHOULD</span> make ample cache space available in order to avoid eviction of Service Descriptions.  The Relay <span class="bcp14">SHOULD</span> share cache state among all clients, to ensure that they use the same Service Descriptions for each Oblivious Service.  If the cache must be partitioned for architectural or performance reasons, operators <span class="bcp14">SHOULD</span> keep the number of users in each partition as large as possible.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
-<p id="section-4.2-4">Oblivious Relays <span class="bcp14">MUST</span> preserve the ETag response header on cached responses, and <span class="bcp14">MUST</span> add an Age header (<span>[<a href="#RFC9111" class="cite xref">RFC9111</a>], <a href="https://rfc-editor.org/rfc/rfc9111#section-5.1" class="relref">Section 5.1</a></span>) to all proxied responses.  Oblivious Relays <span class="bcp14">MUST</span> respect the "Cache-Control: immutable" directive, and <span class="bcp14">MUST NOT</span> revalidate fresh immutable cache entries in response to any incoming requests.  (Note that this is different from the general recommendation in <span><a href="https://rfc-editor.org/rfc/rfc8246#section-2.1" class="relref">Section 2.1</a> of [<a href="#RFC8246" class="cite xref">RFC8246</a>]</span>).  Oblivious Relays also <span class="bcp14">MUST NOT</span> accept PUSH_PROMISE frames from the target.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
-<p id="section-4.2-5">Relays <span class="bcp14">SHOULD</span> employ defenses against malicious attempts to fill the cache.  Some possible defenses include:<a href="#section-4.2-5" class="pilcrow">¶</a></p>
+<p id="section-4.2-3">The Proxy <span class="bcp14">MUST</span> allow use of the GET method to proxy small responses, and <span class="bcp14">SHOULD</span> make ample cache space available in order to avoid eviction of Desired Resources.  The proxy <span class="bcp14">SHOULD</span> share cache state among all clients, to ensure that they observe the same resource contents.  If the cache must be partitioned for architectural or performance reasons, operators <span class="bcp14">SHOULD</span> keep the number of users in each partition as large as possible.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.2-4">Proxies <span class="bcp14">MUST</span> preserve the ETag response header on cached responses, and <span class="bcp14">MUST</span> add an Age header (<span>[<a href="#RFC9111" class="cite xref">RFC9111</a>], <a href="https://rfc-editor.org/rfc/rfc9111#section-5.1" class="relref">Section 5.1</a></span>) to all proxied responses.  Proxies <span class="bcp14">MUST</span> respect the "Cache-Control: immutable" directive, and <span class="bcp14">MUST NOT</span> revalidate fresh immutable cache entries in response to any incoming requests.  (Note that this is different from the general recommendation in <span><a href="https://rfc-editor.org/rfc/rfc8246#section-2.1" class="relref">Section 2.1</a> of [<a href="#RFC8246" class="cite xref">RFC8246</a>]</span>).  Proxies also <span class="bcp14">MUST NOT</span> accept PUSH_PROMISE frames from the target.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+<p id="section-4.2-5">Proxies <span class="bcp14">SHOULD</span> employ defenses against malicious attempts to fill the cache.  Some possible defenses include:<a href="#section-4.2-5" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-4.2-6.1">Rate-limiting each client's use of GET requests.<a href="#section-4.2-6.1" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="section-4.2-6.2">Prioritizing preservation of cache entries that have been served to many clients, if eviction is required.<a href="#section-4.2-6.2" class="pilcrow">¶</a>
 </li>
         </ul>
-<p id="section-4.2-7">Oblivious Relays that are not intended for general-purpose proxy usage <span class="bcp14">MAY</span> impose strict transfer limits or rate limits on HTTP CONNECT and CONNECT-UDP usage.<a href="#section-4.2-7" class="pilcrow">¶</a></p>
-<p id="section-4.2-8">If the Relay offers a DNS over HTTPS resolver, it <span class="bcp14">MUST NOT</span> enable EDNS Client Subnet support <span>[<a href="#RFC7871" class="cite xref">RFC7871</a>]</span>.<a href="#section-4.2-8" class="pilcrow">¶</a></p>
+<p id="section-4.2-7">Proxies that are not intended for general-purpose use <span class="bcp14">MAY</span> impose strict transfer limits or rate limits on transport proxy usage.<a href="#section-4.2-7" class="pilcrow">¶</a></p>
+<p id="section-4.2-8">If the Proxy offers an Encrypted DNS service, it <span class="bcp14">MUST NOT</span> enable EDNS Client Subnet support <span>[<a href="#RFC7871" class="cite xref">RFC7871</a>]</span>.<a href="#section-4.2-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="client">
@@ -1345,25 +1349,33 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
         <h3 id="name-client">
 <a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-client" class="section-name selfRef">Client</a>
         </h3>
-<p id="section-4.3-1">The Client is assumed to know an "https" URI of the relevant Service Description.  Before using that Service Description, it <span class="bcp14">MUST</span> perform the following "double-check" procedure:<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-1">The Client is assumed to know the "https" URI of the Desired Resource.  To retrieve that resource, it <span class="bcp14">MUST</span> perform the following "double-check" procedure:<a href="#section-4.3-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-4.3-2">
-<li id="section-4.3-2.1">Send a GET request to the Oblivious Relay's template (<code>ohttp.proxy.template</code>) with <code>request_uri</code> set to the Service Description URI.<a href="#section-4.3-2.1" class="pilcrow">¶</a>
+<li id="section-4.3-2.1">Send a GET request for the Desired Resource URL via the Proxy's HTTP request proxy function.<a href="#section-4.3-2.1" class="pilcrow">¶</a>
 </li>
           <li id="section-4.3-2.2">Record the response (A).<a href="#section-4.3-2.2" class="pilcrow">¶</a>
 </li>
-          <li id="section-4.3-2.3">Check that response A's "Cache-Control" values indicates "public" and "immutable".<a href="#section-4.3-2.3" class="pilcrow">¶</a>
+          <li id="section-4.3-2.3">Check that response A's "Cache-Control" values indicate "public" and "immutable".<a href="#section-4.3-2.3" class="pilcrow">¶</a>
 </li>
-          <li id="section-4.3-2.4">Establish a CONNECT-UDP tunnel through the proxy to the Service Description URI's origin.<a href="#section-4.3-2.4" class="pilcrow">¶</a>
+          <li id="section-4.3-2.4">Establish a transport tunnel through the Proxy to the Origin (<span class="bcp14">OPTIONAL</span>).<a href="#section-4.3-2.4" class="pilcrow">¶</a>
 </li>
-          <li id="section-4.3-2.5">Fetch the Service Description URI through this tunnel, using a GET request with "If-Match" set to response A's ETag.<a href="#section-4.3-2.5" class="pilcrow">¶</a>
+          <li id="section-4.3-2.5">Fetch the Desired Resource (through this tunnel if available), using a GET request with "If-Match" set to response A's ETag.<a href="#section-4.3-2.5" class="pilcrow">¶</a>
 </li>
           <li id="section-4.3-2.6">Record the response (B).<a href="#section-4.3-2.6" class="pilcrow">¶</a>
 </li>
           <li id="section-4.3-2.7">Check that responses A and B were successful and the contents are identical, otherwise fail.<a href="#section-4.3-2.7" class="pilcrow">¶</a>
 </li>
         </ol>
-<p id="section-4.3-3">This procedure ensures that the Service Description is authentic and will be shared by all users of this proxy.  Once response A or B expires, the client <span class="bcp14">MUST</span> refresh it before continuing to use this Service Description, and <span class="bcp14">MUST</span> repeat the "double-check" process if either response changes.<a href="#section-4.3-3" class="pilcrow">¶</a></p>
-<p id="section-4.3-4">Clients <span class="bcp14">MUST</span> perform each fetch to the origin (step 4) as a fully isolated request.  Any state related to this origin (e.g. cached DNS records, CONNECT-UDP tunnels, QUIC transport state, TLS session tickets, HTTP cookies) <span class="bcp14">MUST NOT</span> be shared with prior or subsequent requests.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
+<p id="section-4.3-3">This procedure ensures that the retrieved copy of the Desired Resource is authentic and is identical to the one held by any other users of this proxy.  Once response A or B expires, the client <span class="bcp14">MUST</span> refresh it before continuing to use this resource, and <span class="bcp14">MUST</span> repeat the "double-check" process if either response changes.<a href="#section-4.3-3" class="pilcrow">¶</a></p>
+<p id="section-4.3-4">Clients <span class="bcp14">MUST</span> perform each fetch to the Origin (step 4) as a fully isolated request.  Any state related to this Origin (e.g., cached DNS records, CONNECT-UDP tunnels, QUIC transport state, TLS session tickets, HTTP cookies) <span class="bcp14">MUST NOT</span> be shared with prior or subsequent requests.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="negative-responses">
+<section id="section-4.4">
+        <h3 id="name-negative-responses">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-negative-responses" class="section-name selfRef">Negative responses</a>
+        </h3>
+<p id="section-4.4-1">If the Desired Resource does not exist, the Double Check requirements apply without modification.  The Cache-Control headers ensure that the negative response (e.g., HTTP 404) is cacheable regardless of its status code.  If Double Check succeeds with a negative response, the Client can be confident that any other Clients of this proxy are holding the same negative response.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1373,24 +1385,8 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
       <h2 id="name-example-oblivious-doh">
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-example-oblivious-doh" class="section-name selfRef">Example: Oblivious DoH</a>
       </h2>
-<p id="section-5-1">In this example, the client has been configured with an Oblivious DoH server and an Oblivious Relay.  The Oblivious DoH server is identified by a Service Description at "https://doh.example.com/config.json" with the following contents:<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-1">In this example, the client has been configured with a Proxy via the following Access Service Description:<a href="#section-5-1" class="pilcrow">¶</a></p>
 <div id="section-5-2">
-<pre class="lang-JSON sourcecode">
-{
-  "dns": {
-    "template": "https://doh.example.com/dns-query{?dns}",
-  },
-  "ohttp": {
-    "gateway": {
-      "uri": "https://example.com/ohttp/",
-      "key": "(KeyConfig in Base64)"
-    }
-  }
-}
-</pre><a href="#section-5-2" class="pilcrow">¶</a>
-</div>
-<p id="section-5-3">The Oblivious Relay is identified as "proxy.example.org", which implies an Access Description at "https://proxy.example.org/.well-known/access-services".  This resource's contents are:<a href="#section-5-3" class="pilcrow">¶</a></p>
-<div id="section-5-4">
 <pre class="lang-JSON sourcecode">
 {
   "dns": {
@@ -1400,22 +1396,38 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
     "template":
         "https://proxy.example.org/masque{?target_host,target_port}"
   },
-  "ohttp": {
-    "relay": {
-      "template": "https://relay.example.org/ohttp{?request_uri}"
-    }
+  "http": {
+    "template": "https://relay.example.org/http{?target_uri}"
   }
 }
-</pre><a href="#section-5-4" class="pilcrow">¶</a>
+</pre><a href="#section-5-2" class="pilcrow">¶</a>
 </div>
-<p id="section-5-5">The following exchanges then occur between the client and the proxy:<a href="#section-5-5" class="pilcrow">¶</a></p>
+<p id="section-5-3">The client has recently been instructed to use an Encrypted DNS server identified as "doh.example.com" that might support Oblivious DoH.  To discover and access this Oblivious DoH service, the client attempts to retrieve two Desired Resources on the Origin "https://doh.example.com":<a href="#section-5-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-4.1">
+          <p id="section-5-4.1.1">The DNS Server's Access Service Description, at "/.well-known/access-services" (<span><a href="https://datatracker.ietf.org/doc/html/draft-schwartz-masque-access-descriptions-03#section-5" class="relref">Section 5</a> of [<a href="#I-D.schwartz-masque-access-descriptions" class="cite xref">I-D.schwartz-masque-access-descriptions</a>]</span>).<a href="#section-5-4.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-4.1.2.1">This conveys the DoH URI template associated with this origin.<a href="#section-5-4.1.2.1" class="pilcrow">¶</a>
+</li>
+          </ul>
+</li>
+        <li class="normal" id="section-5-4.2">
+          <p id="section-5-4.2.1">The Oblivious Gateway KeyConfig, at "/.well-known/oblivious-gateway" (<span><a href="https://datatracker.ietf.org/doc/html/draft-pauly-ohai-svcb-config-03#section-5" class="relref">Section 5</a> of [<a href="#I-D.pauly-ohai-svcb-config" class="cite xref">I-D.pauly-ohai-svcb-config</a>]</span>).<a href="#section-5-4.2.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-4.2.2.1">This conveys the public keys to use for Oblivious HTTP.<a href="#section-5-4.2.2.1" class="pilcrow">¶</a>
+</li>
+          </ul>
+</li>
+      </ul>
+<p id="section-5-5">To prevent client-targeting attacks, the client retrieves both of these resources via DoubleCheck.  The HTTP requests for the Access Service Description appears as follows:<a href="#section-5-5" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-5-6">
 <pre>
 HEADERS
 :method = GET
 :scheme = https
 :authority = relay.example.org
-:path = /ohttp?request_uri=https%3A%2F%2Fdoh.example.com%2Fconfig.json
+:path = /http?target_uri=
+    https%3A%2F%2Fdoh.example.com%2F.well-known%2Faccess-services
 accept: application/access-services+json
 
                       HEADERS
@@ -1425,7 +1437,12 @@ accept: application/access-services+json
                       age: 80000
                       etag: ABCD1234
                       content-type: application/access-services+json
-                      [Service Description contents here]
+                      {
+                        "dns": {
+                          "template":
+                              "https://doh.example.com/foo{?dns}"
+                        }
+                      }
 
 HEADERS
 :method = CONNECT
@@ -1447,7 +1464,8 @@ HEADERS
 :method = GET
 :scheme = https
 :authority = doh.example.com
-:path = /config.json
+:path = /.well-known/access-services
+accept: application/access-services+json
 if-match = ABCD1234
 
                       HEADERS
@@ -1456,17 +1474,23 @@ if-match = ABCD1234
                           no-transform, s-maxage=86400
                       etag: ABCD1234
                       content-type: application/access-services+json
-                      [Service Description contents here]
+                      {
+                        "dns": {
+                          "template":
+                              "https://doh.example.com/foo{?dns}"
+                        }
+                      }
 </pre><a href="#section-5-8" class="pilcrow">¶</a>
 </div>
-<p id="section-5-9">Having successfully fetched the Service Description from both locations, the client confirms that:<a href="#section-5-9" class="pilcrow">¶</a></p>
+<p id="section-5-9">Having successfully fetched the DoH Service Description from both locations, the client confirms that:<a href="#section-5-9" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5-10.1">The responses are identical.<a href="#section-5-10.1" class="pilcrow">¶</a>
 </li>
         <li class="normal" id="section-5-10.2">The cache-control response from the proxy contained the "public" and "immutable" directives.<a href="#section-5-10.2" class="pilcrow">¶</a>
 </li>
       </ul>
-<p id="section-5-11">The client can now use the KeyConfig in this Service Description to reach the Oblivious DoH server, by converting DNS-over-HTTPS requests into Binary HTTP requests for "https://doh.example.com/dns-query", encrypting them to <code>ohttp.gateway.key</code>, and POSTing the encrypted requests to "https://relay.example.org/ohttp?request_uri=https%3A%2F%2Fexample.com%2Fohttp%2F".<a href="#section-5-11" class="pilcrow">¶</a></p>
+<p id="section-5-11">This concludes the DoubleCheck procedure.  The Oblivious Gateway KeyConfig is retrieved by a similar procedure.  These two DoubleCheck procedures can run in parallel, and <span class="bcp14">MAY</span> share a single transport proxy tunnel for efficiency.<a href="#section-5-11" class="pilcrow">¶</a></p>
+<p id="section-5-12">Once the client has double-checked the DoH Service Description and the KeyConfig, it can use the Oblivious DoH service by forming DNS-over-HTTPS requests for "https://doh.example.com/foo{?dns}" as Binary HTTP requests, encrypting them to the KeyConfig, and POSTing the ciphertext to "https://relay.example.org/http?target_uri=https%3A%2F%2Fdoh.example.com%2F.well-known%2Foblivious-gateway".<a href="#section-5-12" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="performance-implications">
@@ -1479,31 +1503,31 @@ if-match = ABCD1234
         <h3 id="name-latency">
 <a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-latency" class="section-name selfRef">Latency</a>
         </h3>
-<p id="section-6.1-1">Suppose that the Client-Relay Round-Trip Time (RTT) is <code>A</code>, and the Relay-Service Description Host RTT is <code>B</code>.  Suppose additionally that the Client has a persistent connection to the Relay that is already running.  Then the procedure described in <a href="#client" class="auto internal xref">Section 4.3</a> requires:<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-1">Suppose that the Client-Proxy Round-Trip Time (RTT) is <code>A</code>, and the Proxy-Origin RTT is <code>B</code>.  Suppose additionally that the Client has a persistent connection to the Proxy that is already running.  Then the procedure described in <a href="#client" class="auto internal xref">Section 4.3</a>, with a CONNECT-UDP transport proxy, requires:<a href="#section-6.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.1-2.1">
-            <p id="section-6.1-2.1.1"><code>A</code> for the GET request to the Relay<a href="#section-6.1-2.1.1" class="pilcrow">¶</a></p>
+            <p id="section-6.1-2.1.1"><code>A</code> for the GET request to the Proxy<a href="#section-6.1-2.1.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.1-2.1.2.1">
-                <code>+B</code> if the requested Service Description is not in cache<a href="#section-6.1-2.1.2.1" class="pilcrow">¶</a>
+                <code>+B</code> if the Desired Resource is not in cache<a href="#section-6.1-2.1.2.1" class="pilcrow">¶</a>
 </li>
               <li class="normal" id="section-6.1-2.1.2.2">
-                <code>+B</code> if the Relay does not have a TLS session ticket for the Service Description Host<a href="#section-6.1-2.1.2.2" class="pilcrow">¶</a>
+                <code>+B</code> if the Proxy does not have a TLS session ticket for the Origin<a href="#section-6.1-2.1.2.2" class="pilcrow">¶</a>
 </li>
             </ul>
 </li>
           <li class="normal" id="section-6.1-2.2">
-            <code>A</code> for the CONNECT-UDP request to the Relay<a href="#section-6.1-2.2" class="pilcrow">¶</a>
+            <code>A</code> for the CONNECT-UDP request to the Proxy<a href="#section-6.1-2.2" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="section-6.1-2.3">
-            <code>A + B</code> for the QUIC handshake to the Service Description Host<a href="#section-6.1-2.3" class="pilcrow">¶</a>
+            <code>A + B</code> for a QUIC handshake to the Origin<a href="#section-6.1-2.3" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="section-6.1-2.4">
-            <code>A + B</code> for the GET request to the Service Description Host<a href="#section-6.1-2.4" class="pilcrow">¶</a>
+            <code>A + B</code> for the GET request to the Origin<a href="#section-6.1-2.4" class="pilcrow">¶</a>
 </li>
         </ul>
-<p id="section-6.1-3">This is a total of <code>4A + 4B</code> in the worst case.  However, clients can reduce the latency by issuing the requests to the Relay in parallel, and by using CONNECT-UDP's "false start" support.  The Service Description Host can also optimize performance, by issuing long-lived TLS session tickets.  With these optimizations, the expected total time is <code>2A + 2B</code>.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
-<p id="section-6.1-4">This procedure only needs to be repeated if the Service Description has expired.  To enable regular key rotation and operational adjustments, a cache lifetime of 24 hours may be suitable.  Clients <span class="bcp14">MAY</span> perform this procedure in advance of an expiration to avoid a delay.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+<p id="section-6.1-3">This is a total of <code>4A + 4B</code> in the worst case.  However, clients can reduce the latency by issuing the requests to the Proxy in parallel, and by using CONNECT-UDP's "false start" support.  The Origin can also optimize performance, by issuing long-lived TLS session tickets.  With these optimizations, the expected total time is <code>2A + 2B</code>.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+<p id="section-6.1-4">This procedure only needs to be repeated if the Desired Resource has expired.  To enable regular key rotation and operational adjustments, a cache lifetime of 24 hours may be suitable.  Clients <span class="bcp14">MAY</span> perform this procedure in advance of an expiration to avoid a delay.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="thundering-herds">
@@ -1511,8 +1535,8 @@ if-match = ABCD1234
         <h3 id="name-thundering-herds">
 <a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-thundering-herds" class="section-name selfRef">Thundering Herds</a>
         </h3>
-<p id="section-6.2-1">All clients of the same Relay and Service will have locally cached Service Descriptions with the same expiration time.  When this entry expires, all active clients will send refresh GET requests to the proxy at their next request.  Relays <span class="bcp14">SHOULD</span> use "request coalescing" to avoid duplicate cache-refresh requests to the target.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
-<p id="section-6.2-2">If the Service Description has changed, these clients will initiate GET requests through the Relay to the Service Description Host to double-check the new contents.  Relays and Service Description Hosts <span class="bcp14">MAY</span> use an HTTP 503 response with a "Retry-After" header to manage load spikes.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
+<p id="section-6.2-1">All clients of the same Proxy and Desired Resource will have locally cached copies with the same expiration time.  When this copy expires, all active clients will send refresh GET requests to the Proxy at their next request.  Proxies <span class="bcp14">SHOULD</span> use "request coalescing" to avoid duplicate cache-refresh requests to the Origin.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.2-2">If the Desired Resource has changed, these clients will all initiate GET requests to the Origin (via transport proxy if applicable) to double-check the new contents.  Proxies and Origins <span class="bcp14">MAY</span> use an HTTP 503 response with a "Retry-After" header to manage load spikes.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1527,43 +1551,50 @@ if-match = ABCD1234
         <h3 id="name-in-scope">
 <a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-in-scope" class="section-name selfRef">In scope</a>
         </h3>
-<div id="forgery">
+<div id="authenticity">
 <section id="section-7.1.1">
-          <h4 id="name-forgery">
-<a href="#section-7.1.1" class="section-number selfRef">7.1.1. </a><a href="#name-forgery" class="section-name selfRef">Forgery</a>
+          <h4 id="name-authenticity">
+<a href="#section-7.1.1" class="section-number selfRef">7.1.1. </a><a href="#name-authenticity" class="section-name selfRef">Authenticity</a>
           </h4>
-<p id="section-7.1.1-1">A malicious Relay could attempt to learn the contents of the Oblivious HTTP request by forging a Service Description containing its own KeyConfig.  This is prevented by the client's requirement that the KeyConfig be served to it by the Service Description Host over HTTPS (<a href="#client" class="auto internal xref">Section 4.3</a>).<a href="#section-7.1.1-1" class="pilcrow">¶</a></p>
+<p id="section-7.1.1-1">A malicious Proxy could attempt to forge the Desired Resource by replacing the response body (e.g., returning an Oblivious HTTP KeyConfig containing a Public Key controlled by the Relay).  This is prevented by the Client's requirement that the Desired Resource be served to it by the Origin over HTTPS (<a href="#client" class="auto internal xref">Section 4.3</a>).<a href="#section-7.1.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="deanonymization">
+<div id="consistency">
 <section id="section-7.1.2">
-          <h4 id="name-deanonymization">
-<a href="#section-7.1.2" class="section-number selfRef">7.1.2. </a><a href="#name-deanonymization" class="section-name selfRef">Deanonymization</a>
+          <h4 id="name-consistency">
+<a href="#section-7.1.2" class="section-number selfRef">7.1.2. </a><a href="#name-consistency" class="section-name selfRef">Consistency</a>
           </h4>
-<p id="section-7.1.2-1">A malicious Service could attempt to link multiple Oblivious HTTP requests together by issuing each Client a unique, persistent KeyConfig.  This attack is prevented by the Client's requirement that the KeyConfig be fresh according to the Relay's cache (<a href="#client" class="auto internal xref">Section 4.3</a>).<a href="#section-7.1.2-1" class="pilcrow">¶</a></p>
-<p id="section-7.1.2-2">A malicious Service could attempt to rotate its entry in the Relay's cache in several ways:<a href="#section-7.1.2-2" class="pilcrow">¶</a></p>
+<p id="section-7.1.2-1">A malicious Origin could attempt to break the consistency guarantee by issuing each Client a unique, persistent variant of the Desired Resource.  This attack is prevented by the Client's requirement that the resource be fresh according to the Proxy's cache (<a href="#client" class="auto internal xref">Section 4.3</a>).<a href="#section-7.1.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.1.2-2">A malicious Origin could attempt to rotate its entry in the Proxy's cache in several ways:<a href="#section-7.1.2-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7.1.2-3.1">Using HTTP PUSH_PROMISE frames.  This attack is prevented by disabling PUSH_PROMISE at the Relay (<a href="#relay" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.2-3.1" class="pilcrow">¶</a>
+<li class="normal" id="section-7.1.2-3.1">Using HTTP PUSH_PROMISE frames.  This attack is prevented by disabling PUSH_PROMISE at the Proxy (<a href="#proxy" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.2-3.1" class="pilcrow">¶</a>
 </li>
             <li class="normal" id="section-7.1.2-3.2">
-              <p id="section-7.1.2-3.2.1">By also acting as a Client and sending requests designed to replace the Service Description in the cache before it expires:<a href="#section-7.1.2-3.2.1" class="pilcrow">¶</a></p>
+              <p id="section-7.1.2-3.2.1">By also acting as a Client and sending requests designed to replace the Desired Resource in the cache before it expires:<a href="#section-7.1.2-3.2.1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7.1.2-3.2.2.1">By sending GET requests with a "Cache-Control: no-cache" or similar directive.  This is prevented by the response's "Cache-Control: public, immutable" directives, which are verified by the Client (<a href="#client" class="auto internal xref">Section 4.3</a>), and by the Relay's obligation to to respect these directives strictly (<a href="#relay" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.2-3.2.2.1" class="pilcrow">¶</a>
+<li class="normal" id="section-7.1.2-3.2.2.1">By sending GET requests with a "Cache-Control: no-cache" or similar directive.  This is prevented by the response's "Cache-Control: public, immutable" directives, which are verified by the Client (<a href="#client" class="auto internal xref">Section 4.3</a>), and by the Proxy's obligation to respect these directives strictly (<a href="#proxy" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.2-3.2.2.1" class="pilcrow">¶</a>
 </li>
-                <li class="normal" id="section-7.1.2-3.2.2.2">By filling the cache with new entries, causing its previous Service Description to be evicted.  <a href="#relay" class="auto internal xref">Section 4.2</a> describes some possible mitigations.<a href="#section-7.1.2-3.2.2.2" class="pilcrow">¶</a>
+                <li class="normal" id="section-7.1.2-3.2.2.2">By filling the cache with new entries, causing the cached copy of the resource to be evicted.  <a href="#proxy" class="auto internal xref">Section 4.2</a> describes some possible mitigations.<a href="#section-7.1.2-3.2.2.2" class="pilcrow">¶</a>
 </li>
               </ul>
 </li>
           </ul>
-<p id="section-7.1.2-4">A malicious Service could attempt to link different requests for the Service Description, in order to link the Oblivious HTTP requests that follow shortly after.  This is prevented by fully isolating each request (<a href="#client" class="auto internal xref">Section 4.3</a>), and by disabling EDNS Client Subnet (<a href="#relay" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="temporal-correlation-attacks">
+<section id="section-7.1.3">
+          <h4 id="name-temporal-correlation-attack">
+<a href="#section-7.1.3" class="section-number selfRef">7.1.3. </a><a href="#name-temporal-correlation-attack" class="section-name selfRef">Temporal Correlation Attacks</a>
+          </h4>
+<p id="section-7.1.3-1">A malicious Origin could attempt to identify or link different requests for the Desired Resource, in order to link proxied requests that follow shortly after.  If a transport proxy is used (as recommended), this is prevented by fully isolating each request (<a href="#client" class="auto internal xref">Section 4.3</a>), and by disabling EDNS Client Subnet (<a href="#proxy" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.3-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="abusive-traffic">
-<section id="section-7.1.3">
+<section id="section-7.1.4">
           <h4 id="name-abusive-traffic">
-<a href="#section-7.1.3" class="section-number selfRef">7.1.3. </a><a href="#name-abusive-traffic" class="section-name selfRef">Abusive traffic</a>
+<a href="#section-7.1.4" class="section-number selfRef">7.1.4. </a><a href="#name-abusive-traffic" class="section-name selfRef">Abusive traffic</a>
           </h4>
-<p id="section-7.1.3-1">A malicious client could use the proxy to send abusive traffic to any destination on the internet.  Abuse concerns can be mitigated by imposing a rate limit at the proxy (<a href="#relay" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.3-1" class="pilcrow">¶</a></p>
+<p id="section-7.1.4-1">A malicious Client could use the Proxy to send abusive traffic to any destination on the internet.  Abuse concerns can be mitigated by imposing a rate limit at the proxy (<a href="#proxy" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.4-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1573,9 +1604,9 @@ if-match = ABCD1234
         <h3 id="name-out-of-scope">
 <a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-out-of-scope" class="section-name selfRef">Out of scope</a>
         </h3>
-<p id="section-7.2-1">This specification assumes that the client starts with identities of the Relay and Service that are authentic and widely shared.  If these identities are inauthentic, or are unique to the client, then the security goals of this specification are not achieved.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
-<p id="section-7.2-2">This specification assumes that at most a small fraction of Clients are acting on behalf of a malicious Service.  If a large fraction of the Clients are malicious, they could conspire to flood the Relay's cache with entries that seem popular, leading to rapid eviction of the malicious Service's Service Descriptions.  Similar concerns apply if a malicious Service can compel naive Clients to fetch a very large number of Service Descriptions.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
-<p id="section-7.2-3">A Client's requests for the Service Description may become linkable if they have distinctive QUIC Initials, HTTP/3 Settings, RTT, or other protocol features observable through the Relay.  This specification does not offer specific mitigations for protocol fingerprinting.<a href="#section-7.2-3" class="pilcrow">¶</a></p>
+<p id="section-7.2-1">This specification assumes that the Client starts with identities of the Proxy and the Desired Resource that are authentic and widely shared.  If these identities are inauthentic, or are unique to the client, then the security goals of this specification are not achieved.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.2-2">This specification assumes that at most a small fraction of Clients are acting on behalf of a malicious Origin.  If a large fraction of the Clients are malicious, they could conspire to flood the Proxy's cache with entries that seem popular, leading to rapid eviction of any cached resources.  Similar concerns apply if a malicious Origin can compel naive Clients to fetch a very large number of distinct resources through the Proxy.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
+<p id="section-7.2-3">Even when a transport proxy is used, the Client's requests for the Desired Resource may become linkable if they have distinctive TLS ClientHellos, QUIC Initials, HTTP/3 Settings, RTT, or other protocol features observable through the transport proxy.  This specification does not offer specific mitigations for protocol fingerprinting.<a href="#section-7.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1597,18 +1628,6 @@ if-match = ABCD1234
 <a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
         </h3>
 <dl class="references">
-<dt id="I-D.ietf-masque-connect-udp">[I-D.ietf-masque-connect-udp]</dt>
-        <dd>
-<span class="refAuthor">Schinazi, D.</span>, <span class="refTitle">"Proxying UDP in HTTP"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-masque-connect-udp-15</span>, <time datetime="2022-06-17" class="refDate">17 June 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-masque-connect-udp-15">https://datatracker.ietf.org/doc/html/draft-ietf-masque-connect-udp-15</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="I-D.ietf-ohai-ohttp">[I-D.ietf-ohai-ohttp]</dt>
-        <dd>
-<span class="refAuthor">Thomson, M.</span> and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Oblivious HTTP"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-ohai-ohttp-05</span>, <time datetime="2022-09-26" class="refDate">26 September 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-ohai-ohttp-05">https://datatracker.ietf.org/doc/html/draft-ietf-ohai-ohttp-05</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="I-D.schwartz-masque-access-descriptions">[I-D.schwartz-masque-access-descriptions]</dt>
-        <dd>
-<span class="refAuthor">Schwartz, B. M.</span>, <span class="refTitle">"HTTP Access Service Description Objects"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-schwartz-masque-access-descriptions-02</span>, <time datetime="2022-07-01" class="refDate">1 July 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-schwartz-masque-access-descriptions-02">https://datatracker.ietf.org/doc/html/draft-schwartz-masque-access-descriptions-02</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="RFC2119">[RFC2119]</dt>
         <dd>
 <span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
@@ -1629,17 +1648,9 @@ if-match = ABCD1234
         <dd>
 <span class="refAuthor">McManus, P.</span>, <span class="refTitle">"HTTP Immutable Responses"</span>, <span class="seriesInfo">RFC 8246</span>, <span class="seriesInfo">DOI 10.17487/RFC8246</span>, <time datetime="2017-09" class="refDate">September 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8246">https://www.rfc-editor.org/rfc/rfc8246</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="RFC8484">[RFC8484]</dt>
-        <dd>
-<span class="refAuthor">Hoffman, P.</span> and <span class="refAuthor">P. McManus</span>, <span class="refTitle">"DNS Queries over HTTPS (DoH)"</span>, <span class="seriesInfo">RFC 8484</span>, <span class="seriesInfo">DOI 10.17487/RFC8484</span>, <time datetime="2018-10" class="refDate">October 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8484">https://www.rfc-editor.org/rfc/rfc8484</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="RFC9111">[RFC9111]</dt>
-        <dd>
-<span class="refAuthor">Fielding, R., Ed.</span>, <span class="refAuthor">Nottingham, M., Ed.</span>, and <span class="refAuthor">J. Reschke, Ed.</span>, <span class="refTitle">"HTTP Caching"</span>, <span class="seriesInfo">STD 98</span>, <span class="seriesInfo">RFC 9111</span>, <span class="seriesInfo">DOI 10.17487/RFC9111</span>, <time datetime="2022-06" class="refDate">June 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9111">https://www.rfc-editor.org/rfc/rfc9111</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC9114">[RFC9114]</dt>
       <dd>
-<span class="refAuthor">Bishop, M., Ed.</span>, <span class="refTitle">"HTTP/3"</span>, <span class="seriesInfo">RFC 9114</span>, <span class="seriesInfo">DOI 10.17487/RFC9114</span>, <time datetime="2022-06" class="refDate">June 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9114">https://www.rfc-editor.org/rfc/rfc9114</a>&gt;</span>. </dd>
+<span class="refAuthor">Fielding, R., Ed.</span>, <span class="refAuthor">Nottingham, M., Ed.</span>, and <span class="refAuthor">J. Reschke, Ed.</span>, <span class="refTitle">"HTTP Caching"</span>, <span class="seriesInfo">STD 98</span>, <span class="seriesInfo">RFC 9111</span>, <span class="seriesInfo">DOI 10.17487/RFC9111</span>, <time datetime="2022-06" class="refDate">June 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9111">https://www.rfc-editor.org/rfc/rfc9111</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
@@ -1648,6 +1659,22 @@ if-match = ABCD1234
 <a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
         </h3>
 <dl class="references">
+<dt id="I-D.ietf-ohai-ohttp">[I-D.ietf-ohai-ohttp]</dt>
+        <dd>
+<span class="refAuthor">Thomson, M.</span> and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Oblivious HTTP"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-ohai-ohttp-05</span>, <time datetime="2022-09-26" class="refDate">26 September 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-ohai-ohttp-05">https://datatracker.ietf.org/doc/html/draft-ietf-ohai-ohttp-05</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-privacypass-protocol">[I-D.ietf-privacypass-protocol]</dt>
+        <dd>
+<span class="refAuthor">Celi, S.</span>, <span class="refAuthor">Davidson, A.</span>, <span class="refAuthor">Faz-Hernández, A.</span>, <span class="refAuthor">Valdez, S.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Privacy Pass Issuance Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-privacypass-protocol-06</span>, <time datetime="2022-07-06" class="refDate">6 July 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-privacypass-protocol-06">https://datatracker.ietf.org/doc/html/draft-ietf-privacypass-protocol-06</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.pauly-ohai-svcb-config">[I-D.pauly-ohai-svcb-config]</dt>
+        <dd>
+<span class="refAuthor">Pauly, T.</span> and <span class="refAuthor">T. Reddy.K</span>, <span class="refTitle">"Discovery of Oblivious Services via Service Binding Records"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-pauly-ohai-svcb-config-03</span>, <time datetime="2022-07-27" class="refDate">27 July 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-pauly-ohai-svcb-config-03">https://datatracker.ietf.org/doc/html/draft-pauly-ohai-svcb-config-03</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.schwartz-masque-access-descriptions">[I-D.schwartz-masque-access-descriptions]</dt>
+        <dd>
+<span class="refAuthor">Schwartz, B. M.</span>, <span class="refTitle">"HTTP Access Service Description Objects"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-schwartz-masque-access-descriptions-03</span>, <time datetime="2022-10-18" class="refDate">18 October 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-schwartz-masque-access-descriptions-03">https://datatracker.ietf.org/doc/html/draft-schwartz-masque-access-descriptions-03</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="I-D.wood-key-consistency">[I-D.wood-key-consistency]</dt>
         <dd>
 <span class="refAuthor">Davidson, A.</span>, <span class="refAuthor">Finkel, M.</span>, <span class="refAuthor">Thomson, M.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Key Consistency and Discovery"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-wood-key-consistency-03</span>, <time datetime="2022-08-17" class="refDate">17 August 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-wood-key-consistency-03">https://datatracker.ietf.org/doc/html/draft-wood-key-consistency-03</a>&gt;</span>. </dd>
