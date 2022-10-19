@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Key Consistency by Double-Checking via a Semi-Trusted Proxy</title>
+<meta content="Benjamin M. Schwartz" name="author">
+<meta content="
+       Several recent IETF privacy protocols require clients to acquire bootstrap information for a service in a way that guarantees both authenticity and consistency, e.g., encrypting to the same key as many other users.  This specification defines a procedure for transferring arbitrary HTTP resources in a manner that provides these guarantees.  The procedure relies on access to a semi-trusted HTTP proxy, under the same security assumptions as an Oblivious HTTP Relay. 
+    " name="description">
+<meta content="xml2rfc 3.15.1" name="generator">
+<meta content="Internet-Draft" name="keyword">
+<meta content="draft-schwartz-ohai-consistency-doublecheck-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.15.1
+    Python 3.10.5
+    appdirs 1.4.4
+    ConfigArgParse 1.5.3
+    google-i18n-address 2.5.2
+    html5lib 1.1
+    intervaltree 3.1.0
+    Jinja2 3.1.2
+    kitchen 1.2.6
+    lxml 4.9.1
+    MarkupSafe 2.1.1
+    pycountry 22.3.5
+    PyYAML 6.0
+    requests 2.27.1
+    setuptools 59.4.0
+    six 1.16.0
+-->
+<link href="draft-schwartz-ohai-consistency-doublecheck.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Cabin Condensed", sans-serif;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1#title {
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1#title, h1#rfcnum {
+  margin: 1.5em 0 0.2em;
+}
+h1#rfcnum + h1#title {
+  margin: 0.2em 0;
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+}
+#abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 16px;
+  line-height: 0;
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+/* font-family isn't space-separated, but =~ will have to do */
+svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
+  font-family: var(--font-mono);
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+}
+:is(ol, ul) :is(ol, ul) {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+  min-width: 20ch;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+dl > dd {
+  margin-bottom: .8em;
+  margin-left: var(--indent) !important; /* stupid element overrides */
+  min-height: 2ex;
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+}
+:is(dl.compact, .dlCompact) > dd > :is(:first-child, .break:first-child + *) {
+  margin-top: 0;
+}
+:is(dl.compact, .dlCompact) > dd > :is(:last-child) {
+  margin-bottom: 0;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
+dl .break {
+  display: none;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href].selfRef {
+  color: var(--text-color);
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+a.xref {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) p {
+    margin: -2px 0;
+    max-height: 0;
+    transition: max-height 2s ease, margin 0.5s ease 0.5s;
+    overflow: hidden;
+  }
+  :is(#status-of-memo, #copyright):hover p,
+  :is(#status-of-memo, #copyright) h2:target ~ p {
+    margin: 0.5em 0;
+    max-height: 500px;
+    overflow: auto;
+  }
+  pre, svg {
+    display: inline-block;
+    overflow-x: auto;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+}
+table.right {
+  margin-left: auto;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+table.left {
+  margin-right: auto;
+}
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+table caption {
+  margin: 0;
+  padding: 3px 0 3px 1em;
+}
+table p {
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+}
+a.pilcrow[href] { color: var(--pilcrow-weak); }
+a.pilcrow[href]:hover { text-decoration: none; }
+@media not print {
+  :hover > a.pilcrow {
+    opacity: 1;
+  }
+  a.pilcrow[href]:hover {
+    color: var(--pilcrow-strong);
+    background-color: transparent;
+  }
+}
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: 14.5px;
+}
+.role {
+  font-variant: all-small-caps;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+}
+#identifiers dt {
+  width: var(--identifier-width);
+  min-width: var(--identifier-width);
+  clear: left;
+  float: left;
+  text-align: right;
+}
+#identifiers dd {
+  margin: 0;
+  margin-left: calc(1em + var(--identifier-width)) !important;
+  min-width: 5em;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+#toc nav ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+#toc nav li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+#toc a.xref {
+  white-space: normal;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dt:target::before {
+  content: "⇒";
+  width: 15px;
+  margin: 0 10px 0 -25px;
+}
+.references dd {
+  margin-left: 8em !important;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #authors-addresses > section > h2 {
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
+}
+
+.rfcEditorRemove p:first-of-type {
+  font-style: italic;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc.active {
+      opacity: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 8px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active nav {
+    display: block;
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin-top: 2px;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #toc nav > ul  {
+    margin-bottom: 2em;
+  }
+  #toc ul {
+    margin: 0 0 0 4px;
+    font-size: var(--small-font-size);
+  }
+  #toc ul :is(p, li) {
+    margin: 2px 0;
+    line-height: 22px;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Changes introduced to fix issues found during implementation */
+
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin: 8px 0.5em 0;
+}
+
+/* Provide styling for table cell text alignment */
+table .text-left {
+  text-align: left;
+}
+table .text-center {
+  text-align: center;
+}
+table .text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  dd {
+    page-break-before: avoid;
+  }
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg :is([stroke="black"], [stroke^="#000"]) {
+  stroke: var(--text-color);
+}
+svg :is([stroke="white"], [stroke^="#fff"]) {
+  stroke: var(--background-color);
+}
+svg :is([fill="black"], [fill^="#000"], :not([fill])) {
+  fill: var(--text-color);
+}
+svg :is([stroke="fill"], [fill^="#fff"]) {
+  fill: var(--background-color);
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">Key Consistency Double Check</td>
+<td class="right">October 2022</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Schwartz</td>
+<td class="center">Expires 22 April 2023</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">ohai</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-schwartz-ohai-consistency-doublecheck-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2022-10-19" class="published">19 October 2022</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2023-04-22">22 April 2023</time></dd>
+<dt class="label-authors">Author:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">B. M. Schwartz</div>
+<div class="org">Google LLC</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Key Consistency by Double-Checking via a Semi-Trusted Proxy</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">Several recent IETF privacy protocols require clients to acquire bootstrap information for a service in a way that guarantees both authenticity and consistency, e.g., encrypting to the same key as many other users.  This specification defines a procedure for transferring arbitrary HTTP resources in a manner that provides these guarantees.  The procedure relies on access to a semi-trusted HTTP proxy, under the same security assumptions as an Oblivious HTTP Relay.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-about-this-document">
+<a href="#name-about-this-document" class="section-name selfRef">About This Document</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-schwartz-ohai-consistency-doublecheck/">https://datatracker.ietf.org/doc/draft-schwartz-ohai-consistency-doublecheck/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">Source for this draft and an issue tracker can be found at
+        <span><a href="https://github.com/bemasc/access-services">https://github.com/bemasc/access-services</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 22 April 2023.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2022 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-overview" class="internal xref">Overview</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-requirements" class="internal xref">Requirements</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-origin" class="internal xref">Origin</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-proxy" class="internal xref">Proxy</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-client" class="internal xref">Client</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-negative-responses" class="internal xref">Negative responses</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-example-oblivious-doh" class="internal xref">Example: Oblivious DoH</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-performance-implications" class="internal xref">Performance Implications</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-latency" class="internal xref">Latency</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-thundering-herds" class="internal xref">Thundering Herds</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-in-scope" class="internal xref">In scope</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.1">
+                    <p id="section-toc.1-1.7.2.1.2.1.1"><a href="#section-7.1.1" class="auto internal xref">7.1.1</a>.  <a href="#name-authenticity" class="internal xref">Authenticity</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.2">
+                    <p id="section-toc.1-1.7.2.1.2.2.1"><a href="#section-7.1.2" class="auto internal xref">7.1.2</a>.  <a href="#name-consistency" class="internal xref">Consistency</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.3">
+                    <p id="section-toc.1-1.7.2.1.2.3.1"><a href="#section-7.1.3" class="auto internal xref">7.1.3</a>.  <a href="#name-temporal-correlation-attack" class="internal xref">Temporal Correlation Attacks</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1.2.4">
+                    <p id="section-toc.1-1.7.2.1.2.4.1"><a href="#section-7.1.4" class="auto internal xref">7.1.4</a>.  <a href="#name-abusive-traffic" class="internal xref">Abusive traffic</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-out-of-scope" class="internal xref">Out of scope</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.1">
+                <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="auto internal xref">9.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.2">
+                <p id="section-toc.1-1.9.2.2.1"><a href="#section-9.2" class="auto internal xref">9.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">Oblivious HTTP <span>[<a href="#I-D.ietf-ohai-ohttp" class="cite xref">I-D.ietf-ohai-ohttp</a>]</span> enables an HTTP client to send requests to a target in such a way that no single party can determine both the identity of the client and the contents of its request.  Oblivious HTTP identifies four parties to each exchange: the Client, Relay, Gateway and Target.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">In order for Oblivious HTTP's privacy guarantees to hold, several preconditions must be met:<a href="#section-1-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-1-3">
+<li id="section-1-3.1">The Client must be one of many users who might be using the Relay.  Otherwise, use of the Relay reveals the user's identity to the Gateway.<a href="#section-1-3.1" class="pilcrow">¶</a>
+</li>
+        <li id="section-1-3.2">The Client must hold an authentic KeyConfig for the Gateway.  Otherwise, the Client could be speaking to the Relay, impersonating the Gateway.<a href="#section-1-3.2" class="pilcrow">¶</a>
+</li>
+        <li id="section-1-3.3">All users of the Relay must be equally likely to use this Gateway, KeyConfig, and Target, regardless of their prior activity.  Otherwise, the encrypted request identifies the Client to the Gateway.<a href="#section-1-3.3" class="pilcrow">¶</a>
+</li>
+        <li id="section-1-3.4">(optional) The Gateway should not learn the IP addresses of the Clients, collectively.  Otherwise, the Gateway might be able to deanonymize requests by correlating them with external information about the Clients.<a href="#section-1-3.4" class="pilcrow">¶</a>
+</li>
+      </ol>
+<p id="section-1-4">The Privacy Pass protocol <span>[<a href="#I-D.ietf-privacypass-protocol" class="cite xref">I-D.ietf-privacypass-protocol</a>]</span> allows a Client to retrieve tokens from an Issuer, and present them to an Origin, in such a way that the Origin can verify the validity of the tokens but cannot identify the Client, even if it colludes with the Issuer.  Privacy Pass requires a similar set of preconditions for its privacy guarantees:<a href="#section-1-4" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-1-5">
+<li id="section-1-5.1">The Client's transport to the Origin must not reveal the client's identity (e.g. via the client IP address).<a href="#section-1-5.1" class="pilcrow">¶</a>
+</li>
+        <li id="section-1-5.2">The Client must hold an authentic Issuer Directory Object.  Otherwise, issuance will fail (resulting in a denial of service, not a privacy violation).<a href="#section-1-5.2" class="pilcrow">¶</a>
+</li>
+        <li id="section-1-5.3">All Clients with the same transport metadata must be using the same Issuer Directory Object for this Issuer.  Otherwise, these factors together uniquely identify the client.<a href="#section-1-5.3" class="pilcrow">¶</a>
+</li>
+        <li id="section-1-5.4">(optional) The Origin should not learn the IP addresses of the Clients collectively, as above.<a href="#section-1-5.4" class="pilcrow">¶</a>
+</li>
+      </ol>
+<p id="section-1-6">Pre-requisite 1 on this list can be achieved by employing a shared transport proxy, on the assumption that at least one of the proxy or the Origin is non-malicious.  (This is the same assumption that an Oblivious HTTP Client makes about its Relay).<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">This specification assumes that a shared, "semi-trusted" proxy is available (fulfilling precondition 1 on each list).  It defines a three-party protocol for a Client, Proxy, and Origin to fetch an HTTP resource in a manner that ensures authenticity and consistency among Clients of a single Proxy.  When used to initialize Oblivious HTTP or Privacy Pass, it guarantees preconditions 2, 3, and optionally 4.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<p id="section-1-8">The input to this protocol is a Desired Resource URI: an "https" URI on the Origin that is assumed to have been distributed to Clients in a globally consistent fashion.  For example, this URI might be the default value of a software setting, or it might be published on a third party's website.  This specification allows Clients to convert the static, long-lived Desired Resource URI into a fresh copy of that resource, i.e. to fetch the resource.<a href="#section-1-8" class="pilcrow">¶</a></p>
+<p id="section-1-9">In principle, the Desired Resource could have been distributed directly through the assumed globally consistent channel.  However, these ad hoc publication channels may not be fast enough to support frequent updates (e.g., key rotations), especially if updates require user intervention.<a href="#section-1-9" class="pilcrow">¶</a></p>
+<p id="section-1-10">This draft is an instantiation of the Shared Proxy with Key Confirmation strategy defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-wood-key-consistency-03#section-4.3" class="relref">Section 4.3</a> of [<a href="#I-D.wood-key-consistency" class="cite xref">I-D.wood-key-consistency</a>]</span>.<a href="#section-1-10" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="conventions-and-definitions">
+<section id="section-2">
+      <h2 id="name-conventions-and-definitions">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-conventions-and-definitions" class="section-name selfRef">Conventions and Definitions</a>
+      </h2>
+<p id="section-2-1">The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>", "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>", "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>", "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>", "<span class="bcp14">NOT RECOMMENDED</span>",
+"<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
+described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
+appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="overview">
+<section id="section-3">
+      <h2 id="name-overview">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-overview" class="section-name selfRef">Overview</a>
+      </h2>
+<p id="section-3-1">In the Key Consistency Double-Check procedure, the Client emits two HTTP GET requests for the Desired Resource.  One uses the Proxy as an HTTP request proxy (terminating TLS and HTTP), and the other optionally uses it as a transport proxy (using TLS end-to-end with the Origin).  The Proxy will forward the first request to the Origin only if the response is not in cache.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<span id="name-overview-of-key-consistency"></span><figure id="figure-1">
+        <div class="alignLeft art-text artwork" id="section-3-2.1">
+<pre>
+          +--------+       +-------+       +--------+
+          |        |&lt;=====&gt;|       |&lt;-----&gt;|        |
+          | Client |       | Proxy |       | Origin |
+          |        |&lt;=====================&gt;|        |
+          +--------+       +-------+       +--------+
+</pre>
+</div>
+<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<a href="#name-overview-of-key-consistency" class="selfRef">Overview of Key-Consistency Double-Check</a>
+        </figcaption></figure>
+<p id="section-3-3">The Proxy caches the response, ensuring that all clients share it during its freshness lifetime.  The client checks this against the authenticated response from the Origin, preventing forgeries.<a href="#section-3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="requirements">
+<section id="section-4">
+      <h2 id="name-requirements">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-requirements" class="section-name selfRef">Requirements</a>
+      </h2>
+<div id="origin">
+<section id="section-4.1">
+        <h3 id="name-origin">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-origin" class="section-name selfRef">Origin</a>
+        </h3>
+<p id="section-4.1-1">The Desired Resource <span class="bcp14">MUST</span> include a "strong validator" ETag (<span><a href="https://rfc-editor.org/rfc/rfc7232#section-2" class="relref">Section 2</a> of [<a href="#RFC7232" class="cite xref">RFC7232</a>]</span>) in any response to a GET request, and <span class="bcp14">MUST</span> support the "If-Match" HTTP request header (<span><a href="https://rfc-editor.org/rfc/rfc7232#section-3" class="relref">Section 3</a> of [<a href="#RFC7232" class="cite xref">RFC7232</a>]</span>).  The response <span class="bcp14">MUST</span> indicate "Cache-Control: public, no-transform, s-maxage=(...), immutable" <span>[<a href="#RFC9111" class="cite xref">RFC9111</a>]</span><span>[<a href="#RFC8246" class="cite xref">RFC8246</a>]</span>.  For efficiency reasons, the max age <span class="bcp14">SHOULD</span> be at least 60 seconds, and preferably much longer.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">If the Desired Resource changes, and the Origin receives a request for the resource whose "If-Match" header identifies a previously served version that has not yet expired, it <span class="bcp14">MUST</span> return a success response containing the previous version.  This response <span class="bcp14">MAY</span> indicate "Cache-Control: private".<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="proxy">
+<section id="section-4.2">
+        <h3 id="name-proxy">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-proxy" class="section-name selfRef">Proxy</a>
+        </h3>
+<p id="section-4.2-1">The Proxy <span class="bcp14">MUST</span> offer HTTP request proxy capability, and <span class="bcp14">SHOULD</span> also offer TCP proxy, UDP proxy, and encrypted DNS resolution capabilities.  (An associated encrypted DNS resolver enables reliable use of HTTPS records <span>[<a href="#SVCB" class="cite xref">SVCB</a>]</span>, improves metadata confidentiality, and allows EDNS Client Subnet to be disabled reliably.)  For example, a proxy in the recommended configuration could be described by the following Access Service Description <span>[<a href="#I-D.schwartz-masque-access-descriptions" class="cite xref">I-D.schwartz-masque-access-descriptions</a>]</span>:<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<span id="name-example-proxy-access-servic"></span><figure id="figure-2">
+          <div id="section-4.2-2.1">
+<pre class="lang-JSON sourcecode">
+{
+  "http": {
+    "template": "https://relay.example.org/http{?target_uri}"
+  },
+  "tcp": {
+    "template":
+        "https://proxy.example.org/tcp{?target_host,tcp_port}"
+  },
+  "udp": {
+    "template":
+        "https://proxy.example.org/masque{?target_host,target_port}"
+  },
+  "dns": {
+    "template": "https://doh.example.com/dns-query{?dns}",
+  }
+}
+</pre>
+</div>
+<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
+<a href="#name-example-proxy-access-servic" class="selfRef">Example Proxy Access Service Description</a>
+          </figcaption></figure>
+<p id="section-4.2-3">The Proxy <span class="bcp14">MUST</span> allow use of the GET method to proxy small responses, and <span class="bcp14">SHOULD</span> make ample cache space available in order to avoid eviction of Desired Resources.  The proxy <span class="bcp14">SHOULD</span> share cache state among all clients, to ensure that they observe the same resource contents.  If the cache must be partitioned for architectural or performance reasons, operators <span class="bcp14">SHOULD</span> keep the number of users in each partition as large as possible.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.2-4">Proxies <span class="bcp14">MUST</span> preserve the ETag response header on cached responses, and <span class="bcp14">MUST</span> add an Age header (<span>[<a href="#RFC9111" class="cite xref">RFC9111</a>], <a href="https://rfc-editor.org/rfc/rfc9111#section-5.1" class="relref">Section 5.1</a></span>) to all proxied responses.  Proxies <span class="bcp14">MUST</span> respect the "Cache-Control: immutable" directive, and <span class="bcp14">MUST NOT</span> revalidate fresh immutable cache entries in response to any incoming requests.  (Note that this is different from the general recommendation in <span><a href="https://rfc-editor.org/rfc/rfc8246#section-2.1" class="relref">Section 2.1</a> of [<a href="#RFC8246" class="cite xref">RFC8246</a>]</span>).  Proxies also <span class="bcp14">MUST NOT</span> accept PUSH_PROMISE frames from the target.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+<p id="section-4.2-5">Proxies <span class="bcp14">SHOULD</span> employ defenses against malicious attempts to fill the cache.  Some possible defenses include:<a href="#section-4.2-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.2-6.1">Rate-limiting each client's use of GET requests.<a href="#section-4.2-6.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-4.2-6.2">Prioritizing preservation of cache entries that have been served to many clients, if eviction is required.<a href="#section-4.2-6.2" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-4.2-7">Proxies that are not intended for general-purpose use <span class="bcp14">MAY</span> impose strict transfer limits or rate limits on transport proxy usage.<a href="#section-4.2-7" class="pilcrow">¶</a></p>
+<p id="section-4.2-8">If the Proxy offers an Encrypted DNS service, it <span class="bcp14">MUST NOT</span> enable EDNS Client Subnet support <span>[<a href="#RFC7871" class="cite xref">RFC7871</a>]</span>.<a href="#section-4.2-8" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="client">
+<section id="section-4.3">
+        <h3 id="name-client">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-client" class="section-name selfRef">Client</a>
+        </h3>
+<p id="section-4.3-1">The Client is assumed to know the "https" URI of the Desired Resource.  To retrieve that resource, it <span class="bcp14">MUST</span> perform the following "double-check" procedure:<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4.3-2">
+<li id="section-4.3-2.1">Send a GET request for the Desired Resource URL via the Proxy's HTTP request proxy function.<a href="#section-4.3-2.1" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.3-2.2">Record the response (A).<a href="#section-4.3-2.2" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.3-2.3">Check that response A's "Cache-Control" values indicate "public" and "immutable".<a href="#section-4.3-2.3" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.3-2.4">Establish a transport tunnel through the Proxy to the Origin (<span class="bcp14">OPTIONAL</span>).<a href="#section-4.3-2.4" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.3-2.5">Fetch the Desired Resource (through this tunnel if available), using a GET request with "If-Match" set to response A's ETag.<a href="#section-4.3-2.5" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.3-2.6">Record the response (B).<a href="#section-4.3-2.6" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.3-2.7">Check that responses A and B were successful and the contents are identical, otherwise fail.<a href="#section-4.3-2.7" class="pilcrow">¶</a>
+</li>
+        </ol>
+<p id="section-4.3-3">This procedure ensures that the retrieved copy of the Desired Resource is authentic and is identical to the one held by any other users of this proxy.  Once response A or B expires, the client <span class="bcp14">MUST</span> refresh it before continuing to use this resource, and <span class="bcp14">MUST</span> repeat the "double-check" process if either response changes.<a href="#section-4.3-3" class="pilcrow">¶</a></p>
+<p id="section-4.3-4">Clients <span class="bcp14">MUST</span> perform each fetch to the Origin (step 4) as a fully isolated request.  Any state related to this Origin (e.g., cached DNS records, CONNECT-UDP tunnels, QUIC transport state, TLS session tickets, HTTP cookies) <span class="bcp14">MUST NOT</span> be shared with prior or subsequent requests.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="negative-responses">
+<section id="section-4.4">
+        <h3 id="name-negative-responses">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-negative-responses" class="section-name selfRef">Negative responses</a>
+        </h3>
+<p id="section-4.4-1">If the Desired Resource does not exist, the Double Check requirements apply without modification.  The Cache-Control headers ensure that the negative response (e.g., HTTP 404) is cacheable regardless of its status code.  If Double Check succeeds with a negative response, the Client can be confident that any other Clients of this proxy are holding the same negative response.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="example-oblivious-doh">
+<section id="section-5">
+      <h2 id="name-example-oblivious-doh">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-example-oblivious-doh" class="section-name selfRef">Example: Oblivious DoH</a>
+      </h2>
+<p id="section-5-1">In this example, the client has been configured with a Proxy via the following Access Service Description:<a href="#section-5-1" class="pilcrow">¶</a></p>
+<div id="section-5-2">
+<pre class="lang-JSON sourcecode">
+{
+  "dns": {
+    "template": "https://proxy.example.org/dns-query{?dns}",
+  },
+  "udp": {
+    "template":
+        "https://proxy.example.org/masque{?target_host,target_port}"
+  },
+  "http": {
+    "template": "https://relay.example.org/http{?target_uri}"
+  }
+}
+</pre><a href="#section-5-2" class="pilcrow">¶</a>
+</div>
+<p id="section-5-3">The client has recently been instructed to use an Encrypted DNS server identified as "doh.example.com" that might support Oblivious DoH.  To discover and access this Oblivious DoH service, the client attempts to retrieve two Desired Resources on the Origin "https://doh.example.com":<a href="#section-5-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-4.1">
+          <p id="section-5-4.1.1">The DNS Server's Access Service Description, at "/.well-known/access-services" (<span><a href="https://datatracker.ietf.org/doc/html/draft-schwartz-masque-access-descriptions-03#section-5" class="relref">Section 5</a> of [<a href="#I-D.schwartz-masque-access-descriptions" class="cite xref">I-D.schwartz-masque-access-descriptions</a>]</span>).<a href="#section-5-4.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-4.1.2.1">This conveys the DoH URI template associated with this origin.<a href="#section-5-4.1.2.1" class="pilcrow">¶</a>
+</li>
+          </ul>
+</li>
+        <li class="normal" id="section-5-4.2">
+          <p id="section-5-4.2.1">The Oblivious Gateway KeyConfig, at "/.well-known/oblivious-gateway" (<span><a href="https://datatracker.ietf.org/doc/html/draft-pauly-ohai-svcb-config-03#section-5" class="relref">Section 5</a> of [<a href="#I-D.pauly-ohai-svcb-config" class="cite xref">I-D.pauly-ohai-svcb-config</a>]</span>).<a href="#section-5-4.2.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-4.2.2.1">This conveys the public keys to use for Oblivious HTTP.<a href="#section-5-4.2.2.1" class="pilcrow">¶</a>
+</li>
+          </ul>
+</li>
+      </ul>
+<p id="section-5-5">To prevent client-targeting attacks, the client retrieves both of these resources via DoubleCheck.  The HTTP requests for the Access Service Description appears as follows:<a href="#section-5-5" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5-6">
+<pre>
+HEADERS
+:method = GET
+:scheme = https
+:authority = relay.example.org
+:path = /http?target_uri=
+    https%3A%2F%2Fdoh.example.com%2F.well-known%2Faccess-services
+accept: application/access-services+json
+
+                      HEADERS
+                      :status = 200
+                      cache-control: public, immutable, \
+                          no-transform, s-maxage=86400
+                      age: 80000
+                      etag: ABCD1234
+                      content-type: application/access-services+json
+                      {
+                        "dns": {
+                          "template":
+                              "https://doh.example.com/foo{?dns}"
+                        }
+                      }
+
+HEADERS
+:method = CONNECT
+:protocol = connect-udp
+:scheme = https
+:authority = proxy.example.org
+:path = /masque?target_host=doh.example.com,target_port=443
+capsule-protocol = ?1
+
+                              HEADERS
+                              :status = 200
+                              capsule-protocol = ?1
+</pre><a href="#section-5-6" class="pilcrow">¶</a>
+</div>
+<p id="section-5-7">The client now has a CONNECT-UDP tunnel to <code>doh.example.com</code>, over which it performs the following GET request using HTTP/3:<a href="#section-5-7" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5-8">
+<pre>
+HEADERS
+:method = GET
+:scheme = https
+:authority = doh.example.com
+:path = /.well-known/access-services
+accept: application/access-services+json
+if-match = ABCD1234
+
+                      HEADERS
+                      :status = 200
+                      cache-control: public, immutable, \
+                          no-transform, s-maxage=86400
+                      etag: ABCD1234
+                      content-type: application/access-services+json
+                      {
+                        "dns": {
+                          "template":
+                              "https://doh.example.com/foo{?dns}"
+                        }
+                      }
+</pre><a href="#section-5-8" class="pilcrow">¶</a>
+</div>
+<p id="section-5-9">Having successfully fetched the DoH Service Description from both locations, the client confirms that:<a href="#section-5-9" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-10.1">The responses are identical.<a href="#section-5-10.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-5-10.2">The cache-control response from the proxy contained the "public" and "immutable" directives.<a href="#section-5-10.2" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="section-5-11">This concludes the DoubleCheck procedure.  The Oblivious Gateway KeyConfig is retrieved by a similar procedure.  These two DoubleCheck procedures can run in parallel, and <span class="bcp14">MAY</span> share a single transport proxy tunnel for efficiency.<a href="#section-5-11" class="pilcrow">¶</a></p>
+<p id="section-5-12">Once the client has double-checked the DoH Service Description and the KeyConfig, it can use the Oblivious DoH service by forming DNS-over-HTTPS requests for "https://doh.example.com/foo{?dns}" as Binary HTTP requests, encrypting them to the KeyConfig, and POSTing the ciphertext to "https://relay.example.org/http?target_uri=https%3A%2F%2Fdoh.example.com%2F.well-known%2Foblivious-gateway".<a href="#section-5-12" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="performance-implications">
+<section id="section-6">
+      <h2 id="name-performance-implications">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-performance-implications" class="section-name selfRef">Performance Implications</a>
+      </h2>
+<div id="latency">
+<section id="section-6.1">
+        <h3 id="name-latency">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-latency" class="section-name selfRef">Latency</a>
+        </h3>
+<p id="section-6.1-1">Suppose that the Client-Proxy Round-Trip Time (RTT) is <code>A</code>, and the Proxy-Origin RTT is <code>B</code>.  Suppose additionally that the Client has a persistent connection to the Proxy that is already running.  Then the procedure described in <a href="#client" class="auto internal xref">Section 4.3</a>, with a CONNECT-UDP transport proxy, requires:<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.1-2.1">
+            <p id="section-6.1-2.1.1"><code>A</code> for the GET request to the Proxy<a href="#section-6.1-2.1.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.1-2.1.2.1">
+                <code>+B</code> if the Desired Resource is not in cache<a href="#section-6.1-2.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li class="normal" id="section-6.1-2.1.2.2">
+                <code>+B</code> if the Proxy does not have a TLS session ticket for the Origin<a href="#section-6.1-2.1.2.2" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li class="normal" id="section-6.1-2.2">
+            <code>A</code> for the CONNECT-UDP request to the Proxy<a href="#section-6.1-2.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-6.1-2.3">
+            <code>A + B</code> for a QUIC handshake to the Origin<a href="#section-6.1-2.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-6.1-2.4">
+            <code>A + B</code> for the GET request to the Origin<a href="#section-6.1-2.4" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-6.1-3">This is a total of <code>4A + 4B</code> in the worst case.  However, clients can reduce the latency by issuing the requests to the Proxy in parallel, and by using CONNECT-UDP's "false start" support.  The Origin can also optimize performance, by issuing long-lived TLS session tickets.  With these optimizations, the expected total time is <code>2A + 2B</code>.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+<p id="section-6.1-4">This procedure only needs to be repeated if the Desired Resource has expired.  To enable regular key rotation and operational adjustments, a cache lifetime of 24 hours may be suitable.  Clients <span class="bcp14">MAY</span> perform this procedure in advance of an expiration to avoid a delay.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="thundering-herds">
+<section id="section-6.2">
+        <h3 id="name-thundering-herds">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-thundering-herds" class="section-name selfRef">Thundering Herds</a>
+        </h3>
+<p id="section-6.2-1">All clients of the same Proxy and Desired Resource will have locally cached copies with the same expiration time.  When this copy expires, all active clients will send refresh GET requests to the Proxy at their next request.  Proxies <span class="bcp14">SHOULD</span> use "request coalescing" to avoid duplicate cache-refresh requests to the Origin.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.2-2">If the Desired Resource has changed, these clients will all initiate GET requests to the Origin (via transport proxy if applicable) to double-check the new contents.  Proxies and Origins <span class="bcp14">MAY</span> use an HTTP 503 response with a "Retry-After" header to manage load spikes.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-7">
+      <h2 id="name-security-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<div id="in-scope">
+<section id="section-7.1">
+        <h3 id="name-in-scope">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-in-scope" class="section-name selfRef">In scope</a>
+        </h3>
+<div id="authenticity">
+<section id="section-7.1.1">
+          <h4 id="name-authenticity">
+<a href="#section-7.1.1" class="section-number selfRef">7.1.1. </a><a href="#name-authenticity" class="section-name selfRef">Authenticity</a>
+          </h4>
+<p id="section-7.1.1-1">A malicious Proxy could attempt to forge the Desired Resource by replacing the response body (e.g., returning an Oblivious HTTP KeyConfig containing a Public Key controlled by the Relay).  This is prevented by the Client's requirement that the Desired Resource be served to it by the Origin over HTTPS (<a href="#client" class="auto internal xref">Section 4.3</a>).<a href="#section-7.1.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="consistency">
+<section id="section-7.1.2">
+          <h4 id="name-consistency">
+<a href="#section-7.1.2" class="section-number selfRef">7.1.2. </a><a href="#name-consistency" class="section-name selfRef">Consistency</a>
+          </h4>
+<p id="section-7.1.2-1">A malicious Origin could attempt to break the consistency guarantee by issuing each Client a unique, persistent variant of the Desired Resource.  This attack is prevented by the Client's requirement that the resource be fresh according to the Proxy's cache (<a href="#client" class="auto internal xref">Section 4.3</a>).<a href="#section-7.1.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.1.2-2">A malicious Origin could attempt to rotate its entry in the Proxy's cache in several ways:<a href="#section-7.1.2-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.1.2-3.1">Using HTTP PUSH_PROMISE frames.  This attack is prevented by disabling PUSH_PROMISE at the Proxy (<a href="#proxy" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.2-3.1" class="pilcrow">¶</a>
+</li>
+            <li class="normal" id="section-7.1.2-3.2">
+              <p id="section-7.1.2-3.2.1">By also acting as a Client and sending requests designed to replace the Desired Resource in the cache before it expires:<a href="#section-7.1.2-3.2.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.1.2-3.2.2.1">By sending GET requests with a "Cache-Control: no-cache" or similar directive.  This is prevented by the response's "Cache-Control: public, immutable" directives, which are verified by the Client (<a href="#client" class="auto internal xref">Section 4.3</a>), and by the Proxy's obligation to respect these directives strictly (<a href="#proxy" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.2-3.2.2.1" class="pilcrow">¶</a>
+</li>
+                <li class="normal" id="section-7.1.2-3.2.2.2">By filling the cache with new entries, causing the cached copy of the resource to be evicted.  <a href="#proxy" class="auto internal xref">Section 4.2</a> describes some possible mitigations.<a href="#section-7.1.2-3.2.2.2" class="pilcrow">¶</a>
+</li>
+              </ul>
+</li>
+          </ul>
+</section>
+</div>
+<div id="temporal-correlation-attacks">
+<section id="section-7.1.3">
+          <h4 id="name-temporal-correlation-attack">
+<a href="#section-7.1.3" class="section-number selfRef">7.1.3. </a><a href="#name-temporal-correlation-attack" class="section-name selfRef">Temporal Correlation Attacks</a>
+          </h4>
+<p id="section-7.1.3-1">A malicious Origin could attempt to identify or link different requests for the Desired Resource, in order to link proxied requests that follow shortly after.  If a transport proxy is used (as recommended), this is prevented by fully isolating each request (<a href="#client" class="auto internal xref">Section 4.3</a>), and by disabling EDNS Client Subnet (<a href="#proxy" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="abusive-traffic">
+<section id="section-7.1.4">
+          <h4 id="name-abusive-traffic">
+<a href="#section-7.1.4" class="section-number selfRef">7.1.4. </a><a href="#name-abusive-traffic" class="section-name selfRef">Abusive traffic</a>
+          </h4>
+<p id="section-7.1.4-1">A malicious Client could use the Proxy to send abusive traffic to any destination on the internet.  Abuse concerns can be mitigated by imposing a rate limit at the proxy (<a href="#proxy" class="auto internal xref">Section 4.2</a>).<a href="#section-7.1.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="out-of-scope">
+<section id="section-7.2">
+        <h3 id="name-out-of-scope">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-out-of-scope" class="section-name selfRef">Out of scope</a>
+        </h3>
+<p id="section-7.2-1">This specification assumes that the Client starts with identities of the Proxy and the Desired Resource that are authentic and widely shared.  If these identities are inauthentic, or are unique to the client, then the security goals of this specification are not achieved.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.2-2">This specification assumes that at most a small fraction of Clients are acting on behalf of a malicious Origin.  If a large fraction of the Clients are malicious, they could conspire to flood the Proxy's cache with entries that seem popular, leading to rapid eviction of any cached resources.  Similar concerns apply if a malicious Origin can compel naive Clients to fetch a very large number of distinct resources through the Proxy.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
+<p id="section-7.2-3">Even when a transport proxy is used, the Client's requests for the Desired Resource may become linkable if they have distinctive TLS ClientHellos, QUIC Initials, HTTP/3 Settings, RTT, or other protocol features observable through the transport proxy.  This specification does not offer specific mitigations for protocol fingerprinting.<a href="#section-7.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="iana">
+<section id="section-8">
+      <h2 id="name-iana-considerations">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-8-1">No IANA action is requested.<a href="#section-8-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<section id="section-9">
+      <h2 id="name-references">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<section id="section-9.1">
+        <h3 id="name-normative-references">
+<a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7232">[RFC7232]</dt>
+        <dd>
+<span class="refAuthor">Fielding, R., Ed.</span> and <span class="refAuthor">J. Reschke, Ed.</span>, <span class="refTitle">"Hypertext Transfer Protocol (HTTP/1.1): Conditional Requests"</span>, <span class="seriesInfo">RFC 7232</span>, <span class="seriesInfo">DOI 10.17487/RFC7232</span>, <time datetime="2014-06" class="refDate">June 2014</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7232">https://www.rfc-editor.org/rfc/rfc7232</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7871">[RFC7871]</dt>
+        <dd>
+<span class="refAuthor">Contavalli, C.</span>, <span class="refAuthor">van der Gaast, W.</span>, <span class="refAuthor">Lawrence, D.</span>, and <span class="refAuthor">W. Kumari</span>, <span class="refTitle">"Client Subnet in DNS Queries"</span>, <span class="seriesInfo">RFC 7871</span>, <span class="seriesInfo">DOI 10.17487/RFC7871</span>, <time datetime="2016-05" class="refDate">May 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7871">https://www.rfc-editor.org/rfc/rfc7871</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+        <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8246">[RFC8246]</dt>
+        <dd>
+<span class="refAuthor">McManus, P.</span>, <span class="refTitle">"HTTP Immutable Responses"</span>, <span class="seriesInfo">RFC 8246</span>, <span class="seriesInfo">DOI 10.17487/RFC8246</span>, <time datetime="2017-09" class="refDate">September 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8246">https://www.rfc-editor.org/rfc/rfc8246</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9111">[RFC9111]</dt>
+      <dd>
+<span class="refAuthor">Fielding, R., Ed.</span>, <span class="refAuthor">Nottingham, M., Ed.</span>, and <span class="refAuthor">J. Reschke, Ed.</span>, <span class="refTitle">"HTTP Caching"</span>, <span class="seriesInfo">STD 98</span>, <span class="seriesInfo">RFC 9111</span>, <span class="seriesInfo">DOI 10.17487/RFC9111</span>, <time datetime="2022-06" class="refDate">June 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9111">https://www.rfc-editor.org/rfc/rfc9111</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+<section id="section-9.2">
+        <h3 id="name-informative-references">
+<a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="I-D.ietf-ohai-ohttp">[I-D.ietf-ohai-ohttp]</dt>
+        <dd>
+<span class="refAuthor">Thomson, M.</span> and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Oblivious HTTP"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-ohai-ohttp-05</span>, <time datetime="2022-09-26" class="refDate">26 September 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-ohai-ohttp-05">https://datatracker.ietf.org/doc/html/draft-ietf-ohai-ohttp-05</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-privacypass-protocol">[I-D.ietf-privacypass-protocol]</dt>
+        <dd>
+<span class="refAuthor">Celi, S.</span>, <span class="refAuthor">Davidson, A.</span>, <span class="refAuthor">Faz-Hernández, A.</span>, <span class="refAuthor">Valdez, S.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Privacy Pass Issuance Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-privacypass-protocol-06</span>, <time datetime="2022-07-06" class="refDate">6 July 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-privacypass-protocol-06">https://datatracker.ietf.org/doc/html/draft-ietf-privacypass-protocol-06</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.pauly-ohai-svcb-config">[I-D.pauly-ohai-svcb-config]</dt>
+        <dd>
+<span class="refAuthor">Pauly, T.</span> and <span class="refAuthor">T. Reddy.K</span>, <span class="refTitle">"Discovery of Oblivious Services via Service Binding Records"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-pauly-ohai-svcb-config-03</span>, <time datetime="2022-07-27" class="refDate">27 July 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-pauly-ohai-svcb-config-03">https://datatracker.ietf.org/doc/html/draft-pauly-ohai-svcb-config-03</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.schwartz-masque-access-descriptions">[I-D.schwartz-masque-access-descriptions]</dt>
+        <dd>
+<span class="refAuthor">Schwartz, B. M.</span>, <span class="refTitle">"HTTP Access Service Description Objects"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-schwartz-masque-access-descriptions-03</span>, <time datetime="2022-10-18" class="refDate">18 October 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-schwartz-masque-access-descriptions-03">https://datatracker.ietf.org/doc/html/draft-schwartz-masque-access-descriptions-03</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.wood-key-consistency">[I-D.wood-key-consistency]</dt>
+        <dd>
+<span class="refAuthor">Davidson, A.</span>, <span class="refAuthor">Finkel, M.</span>, <span class="refAuthor">Thomson, M.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Key Consistency and Discovery"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-wood-key-consistency-03</span>, <time datetime="2022-08-17" class="refDate">17 August 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-wood-key-consistency-03">https://datatracker.ietf.org/doc/html/draft-wood-key-consistency-03</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SVCB">[SVCB]</dt>
+      <dd>
+<span class="refAuthor">Schwartz, B. M.</span>, <span class="refAuthor">Bishop, M.</span>, and <span class="refAuthor">E. Nygren</span>, <span class="refTitle">"Service binding and parameter specification via the DNS (DNS SVCB and HTTPS RRs)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dnsop-svcb-https-11</span>, <time datetime="2022-10-11" class="refDate">11 October 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-svcb-https-11">https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-svcb-https-11</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</section>
+<div id="acknowledgments">
+<section id="appendix-A">
+      <h2 id="name-acknowledgments">
+<a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<p id="appendix-A-1">TODO acknowledge.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-B">
+      <h2 id="name-authors-address">
+<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Benjamin M. Schwartz</span></div>
+<div dir="auto" class="left"><span class="org">Google LLC</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:bemasc@google.com" class="email">bemasc@google.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
