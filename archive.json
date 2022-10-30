@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-10-27T01:15:54.530367+00:00",
+  "timestamp": "2022-10-30T01:22:44.473934+00:00",
   "repo": "bemasc/access-services",
   "labels": [
     {
@@ -207,6 +207,22 @@
           "updatedAt": "2022-06-27T17:27:20Z"
         }
       ]
+    },
+    {
+      "number": 7,
+      "id": "I_kwDOHIcqgM5VGWtY",
+      "title": "DoubleCheck: Narrow scope of normative language",
+      "url": "https://github.com/bemasc/access-services/issues/7",
+      "state": "OPEN",
+      "author": "bemasc",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "@martinthomson wrote:\r\n> this draft concerns itself overly much with things outside of its scope, sometimes using normative language for things that I would prefer it be silent on.  For instance, you require - with a \"MUST NOT\" - that if the proxy offers DNS service it disable EDNS client subnet.  That's overreach in my view, and not the only example of that sort of thing.  Duplicating HTTP requirements is similarly overreach in a different way.",
+      "createdAt": "2022-10-28T19:32:28Z",
+      "updatedAt": "2022-10-28T19:32:38Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": []
